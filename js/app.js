@@ -138,12 +138,20 @@
     setTimeout(() => { t.classList.add("leaving"); setTimeout(() => t.remove(), 260); }, 3200);
   }
 
+  /* Imagen del producto: usa la foto real si existe, si no la ilustración */
+  function productMedia(p, eager) {
+    if (p.img) {
+      return `<img src="${p.img}" alt="${esc(p.name)}" loading="${eager ? "eager" : "lazy"}" decoding="async">`;
+    }
+    return productArt(p.art);
+  }
+
   /* Componentes reutilizables */
   function productCard(p) {
     const old = p.oldPrice ? `<span class="old">${money(p.oldPrice)}</span>` : "";
     return `<article class="product-card reveal">
       <div class="product-thumb">
-        <a href="producto.html?id=${p.id}" aria-label="${esc(p.name)}">${productArt(p.art)}</a>
+        <a href="producto.html?id=${p.id}" aria-label="${esc(p.name)}">${productMedia(p)}</a>
         ${p.tag ? `<span class="product-tag ${p.popular ? "is-pop" : ""}">${esc(p.tag)}</span>` : ""}
       </div>
       <div class="product-body">
@@ -275,7 +283,7 @@
         <span>${esc(p.name)}</span>
       </nav>
       <div class="pd-layout" data-add-scope>
-        <div class="pd-media">${productArt(p.art)}${p.tag ? `<span class="product-tag ${p.popular ? "is-pop" : ""}" style="position:absolute;top:16px;left:16px">${esc(p.tag)}</span>` : ""}</div>
+        <div class="pd-media">${productMedia(p, true)}${p.tag ? `<span class="product-tag ${p.popular ? "is-pop" : ""}" style="position:absolute;top:16px;left:16px">${esc(p.tag)}</span>` : ""}</div>
         <div class="pd-info">
           <span class="product-cat">${esc(catName(p.cat))}</span>
           <h1>${esc(p.name)}</h1>
@@ -321,7 +329,7 @@
           <div class="cart-items">
             ${lines.map(l => `
               <div class="cart-item" data-row="${l.id}">
-                <a class="ci-thumb" href="producto.html?id=${l.id}">${productArt(l.art)}</a>
+                <a class="ci-thumb" href="producto.html?id=${l.id}">${productMedia(l)}</a>
                 <div>
                   <div class="ci-cat">${esc(catName(l.cat))}</div>
                   <a class="ci-name" href="producto.html?id=${l.id}">${esc(l.name)}</a>
@@ -443,7 +451,7 @@
         <aside class="summary">
           <h3>Tu pedido</h3>
           <div class="mini-cart">
-            ${lines.map(l => `<div class="mini-item"><span class="mi-thumb">${productArt(l.art)}</span>
+            ${lines.map(l => `<div class="mini-item"><span class="mi-thumb">${productMedia(l)}</span>
               <span><span class="mi-name">${esc(l.name)}</span><span class="mi-qty"> ×${l.qty}</span></span>
               <span class="mi-price">${money(l.lineTotal)}</span></div>`).join("")}
           </div>

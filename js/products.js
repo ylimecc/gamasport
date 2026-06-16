@@ -38,7 +38,7 @@
       name: "Alquiler Cancha Fútbol 5 — Hora Diurna",
       cat: "canchas",
       price: 800, unit: "/ hora", tag: "Más reservado", popular: true,
-      art: "cancha-diurna",
+      art: "cancha-diurna", img: "img/cancha-diurna.jpg",
       short: "Una hora de juego en cancha de fútbol 5 con grama sintética profesional, horario de 3:00 a 6:00 PM.",
       long: "Reserva tu hora de juego en nuestra cancha de fútbol 5 con grama sintética de última generación. Ideal para partidos entre amigos, prácticas de equipo o picados de fin de semana. Incluye uso del parqueo privado y acceso al área de restaurante. Capacidad recomendada de 10 a 12 jugadores.",
       specs: ["Cancha de fútbol 5 con grama sintética", "Duración: 1 hora continua", "Horario diurno (3:00 – 6:00 PM)", "Parqueo privado incluido", "Acceso al área de restaurante", "Para 10–12 jugadores"]
@@ -49,7 +49,7 @@
       name: "Alquiler Cancha Fútbol 5 — Hora Nocturna",
       cat: "canchas",
       price: 1000, unit: "/ hora", tag: "Iluminación LED",
-      art: "cancha-nocturna",
+      art: "cancha-nocturna", img: "img/cancha-nocturna.jpg",
       short: "Una hora de juego bajo iluminación nocturna profesional, horario de 6:00 a 9:00 PM.",
       long: "Vive la experiencia del fútbol nocturno en GamaSport. Nuestra cancha cuenta con iluminación LED de alto rendimiento que garantiza visibilidad total para tus partidos de noche. El horario nocturno es el preferido por equipos y ligas amistosas. Incluye parqueo privado y acceso al restaurante.",
       specs: ["Cancha de fútbol 5 con grama sintética", "Iluminación LED nocturna", "Duración: 1 hora continua", "Horario nocturno (6:00 – 9:00 PM)", "Parqueo privado incluido", "Para 10–12 jugadores"]
@@ -60,7 +60,7 @@
       name: "Paquete Picado 2 Horas + Hidratación",
       cat: "canchas",
       price: 1750, oldPrice: 2000, unit: "/ paquete", tag: "Ahorra L250",
-      art: "paquete-2h",
+      art: "paquete-2h", img: "img/paquete-2h.jpg",
       short: "Dos horas continuas de cancha más 12 bebidas hidratantes para todo el equipo.",
       long: "El paquete perfecto para el picado largo del fin de semana. Disfruta de dos horas continuas en cancha (diurno o nocturno) e incluye 12 bebidas hidratantes frías para mantener a tu equipo en juego. Reserva tu horario preferido y nosotros nos encargamos del resto.",
       specs: ["2 horas continuas de cancha", "Incluye 12 bebidas hidratantes", "Disponible diurno o nocturno", "Parqueo privado incluido", "Acceso al área de restaurante", "Ahorro de L250 vs. precio normal"]
@@ -71,7 +71,7 @@
       name: "Inscripción a Torneo Relámpago",
       cat: "torneos",
       price: 1500, unit: "/ equipo", tag: "Por equipo", popular: true,
-      art: "torneo",
+      art: "torneo", img: "img/torneo.jpg",
       short: "Inscribe a tu equipo en el torneo relámpago de un día: mínimo 3 partidos garantizados.",
       long: "Compite en nuestro tradicional torneo relámpago de fútbol 5. La inscripción es por equipo (hasta 10 jugadores) e incluye un mínimo de 3 partidos garantizados, arbitraje oficial, hidratación para la jornada y premiación para el equipo campeón. ¡Demuestra de qué está hecho tu equipo!",
       specs: ["Inscripción por equipo (hasta 10 jugadores)", "Mínimo 3 partidos garantizados", "Arbitraje oficial incluido", "Hidratación durante la jornada", "Premiación para el campeón", "Camiseta conmemorativa del torneo"]
@@ -82,7 +82,7 @@
       name: "Evento Deportivo Privado (3 horas)",
       cat: "torneos",
       price: 3500, unit: "/ evento", tag: "Cancha exclusiva",
-      art: "evento",
+      art: "evento", img: "img/evento.jpg",
       short: "Tres horas de cancha exclusiva para tu empresa o grupo, con organización y logística incluida.",
       long: "Organiza el evento deportivo de tu empresa, colonia o grupo de amigos con uso exclusivo de la cancha durante 3 horas. Incluye coordinación logística, marcador, sonido ambiental y opción de catering del restaurante. Perfecto para integraciones empresariales y celebraciones deportivas.",
       specs: ["Uso exclusivo de cancha por 3 horas", "Coordinación logística incluida", "Marcador y sonido ambiental", "Opción de catering (cotización aparte)", "Parqueo privado para invitados", "Diurno o nocturno"]
@@ -104,7 +104,7 @@
       name: "Combo Deportivo (Hamburguesa + Papas + Bebida)",
       cat: "restaurante",
       price: 160, unit: "/ combo", tag: "Del restaurante", popular: true,
-      art: "combo",
+      art: "combo", img: "img/combo.jpg",
       short: "Hamburguesa artesanal, papas fritas y bebida fría. Energía para después del partido.",
       long: "Recupera energías con nuestro Combo Deportivo: una jugosa hamburguesa artesanal acompañada de papas fritas crujientes y una bebida fría a elección. Disponible para consumo en el área de restaurante o para llevar. Pídelo anticipado con tu reserva y tenlo listo al terminar tu partido.",
       specs: ["Hamburguesa artesanal de res", "Porción de papas fritas", "Bebida fría a elección", "Disponible para llevar", "Se puede pedir anticipado con la reserva"]
