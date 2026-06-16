@@ -150,7 +150,7 @@ p { color: var(--text-soft); }
   background-size: 54px 54px;
   mask-image: radial-gradient(circle at 70% 40%, #000, transparent 75%);
 }
-.hero-inner { position: relative; z-index: 1; display: grid; grid-template-columns: 1.05fr .95fr; gap: 48px; align-items: center; padding-block: 86px 96px; }
+.hero-inner { position: relative; z-index: 1; display: grid; grid-template-columns: 1.05fr .95fr; gap: 48px; align-items: center; padding-block: 48px 58px; }
 .hero .eyebrow { margin-bottom: 20px; }
 .hero h1 { color: #fff; }
 .hero h1 .hl { color: var(--lime); }
@@ -166,12 +166,12 @@ p { color: var(--text-soft); }
 /* tarjeta visual del hero */
 .hero-card {
   position: relative; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
-  border-radius: var(--radius-lg); padding: 22px; box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(6px);
+  border-radius: var(--radius-lg); padding: 18px; box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(6px); max-width: 450px; justify-self: center; width: 100%;
 }
 .hero-card .pitch { border-radius: 16px; overflow: hidden; }
 .hero-card .quick {
-  margin-top: 16px; background: #fff; border-radius: 16px; padding: 16px; color: var(--text);
+  margin-top: 12px; background: #fff; border-radius: 16px; padding: 14px; color: var(--text);
   display: grid; gap: 10px; box-shadow: var(--shadow);
 }
 .quick-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
