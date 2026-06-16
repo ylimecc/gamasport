@@ -282,7 +282,7 @@
         <a class="btn btn--primary" href="catalogo.html" style="margin-top:16px">Ver catálogo</a></div>`;
       return;
     }
-    document.title = `${p.name}, GamaSport`;
+    document.title = `${p.name} - GamaSport`;
     const old = p.oldPrice ? `<span class="old">${money(p.oldPrice)}</span>` : "";
     root.innerHTML = `
       <nav class="breadcrumb" aria-label="Ruta">
