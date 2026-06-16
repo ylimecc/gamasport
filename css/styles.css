@@ -44,6 +44,7 @@ body {
   overflow-x: clip;
 }
 img, svg { display: block; max-width: 100%; }
+img { height: auto; }
 /* tamaño base de los íconos de interfaz (las reglas específicas lo sobreescriben) */
 .gi { width: 1.15em; height: 1.15em; flex: none; vertical-align: -0.18em; }
 a { color: var(--green-dark); text-decoration: none; }
@@ -170,7 +171,7 @@ p { color: var(--text-soft); }
   backdrop-filter: blur(6px); max-width: 450px; justify-self: center; width: 100%;
 }
 .hero-card .pitch { border-radius: 16px; overflow: hidden; }
-.hero-card .pitch img { display: block; width: 100%; aspect-ratio: 4/3; object-fit: cover; }
+.hero-card .pitch img { display: block; width: 100%; height: auto; aspect-ratio: 4/3; object-fit: cover; }
 .hero-card .quick {
   margin-top: 12px; background: #fff; border-radius: 16px; padding: 14px; color: var(--text);
   display: grid; gap: 10px; box-shadow: var(--shadow);

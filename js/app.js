@@ -208,12 +208,20 @@
       grid.innerHTML = featured.map(productCard).join("");
       revealOnScroll();
     }
-    // tarjeta rápida del hero
+    // tarjeta rápida del hero: cambia según la hora (diurno 3–6 PM / nocturno 6–9 PM)
     const quick = $("#heroQuick");
     if (quick) {
-      const p = getProduct("GS-102");
+      const h = new Date().getHours();
+      const daytime = h >= 15 && h < 18;        // 3:00 – 5:59 PM
+      const open = h >= 15 && h < 21;           // horario del negocio: 3:00 – 9:00 PM
+      const p = getProduct(daytime ? "GS-101" : "GS-102");
+      const sub = daytime ? "Grama sintética · 3–6 PM" : "Iluminación LED · 6–9 PM";
+      const heroImg = $("#heroPitchImg");
+      if (heroImg) { heroImg.src = daytime ? "img/cancha-diurna.jpg" : "img/cancha-nocturna.jpg"; heroImg.alt = p.name; }
+      const badge = $("#heroBadge");
+      if (badge) badge.textContent = open ? "Disponible ahora" : "Reserva para hoy";
       quick.innerHTML = `
-        <div class="quick-row"><div><div class="q-name">${esc(p.name)}</div><div class="q-sub">Iluminación LED · 6–9 PM</div></div><div class="q-price">${money(p.price)}</div></div>
+        <div class="quick-row"><div><div class="q-name">${esc(p.name)}</div><div class="q-sub">${sub}</div></div><div class="q-price">${money(p.price)}</div></div>
         <a class="btn btn--primary btn--block" href="producto.html?id=${p.id}">Reservar ahora ${icon("arrow")}</a>`;
     }
   }
