@@ -397,7 +397,7 @@ p { color: var(--text-soft); }
 
 /* la franja de "¿listo para jugar?" */
 .cta-band { background: linear-gradient(140deg, var(--green-dark), #0a6b2f 60%, #0a4d24); border-radius: var(--radius-lg); padding: 52px 44px; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 30px; flex-wrap: wrap; position: relative; overflow: hidden; }
-.cta-band::after { content: ""; position: absolute; inset: 0; opacity: .15; background-image: linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px); background-size: 40px 40px; mask-image: radial-gradient(circle at 90% 10%, #000, transparent 70%); }
+.cta-band::after { content: ""; position: absolute; inset: 0; opacity: .12; background-image: url("../img/patron-balones.svg"); background-repeat: repeat; background-size: 150px 150px; mask-image: radial-gradient(circle at 90% 10%, #000, transparent 78%); }
 .cta-band h2 { color: #fff; position: relative; }
 .cta-band p { color: rgba(255,255,255,.85); margin-top: 8px; position: relative; }
 .cta-band .btn { position: relative; }
