@@ -156,7 +156,7 @@ p { color: var(--text-soft); }
 .hero h1 .hl { color: var(--lime); }
 .hero p { color: #c4d6cd; font-size: 1.18rem; margin-top: 18px; max-width: 540px; }
 .hero-cta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
-.hero-stats { display: flex; gap: 34px; margin-top: 42px; flex-wrap: wrap; }
+.hero-stats { display: grid; grid-template-columns: repeat(4, auto); column-gap: 30px; row-gap: 14px; margin-top: 28px; justify-content: start; }
 .hero-stats .num { font-size: 2.1rem; font-weight: 900; color: #fff; }
 .hero-stats .lbl { font-size: .85rem; color: #9fb6ac; letter-spacing: .03em; }
 .hero-badges { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 26px; }
@@ -519,7 +519,7 @@ p { color: var(--text-soft); }
   .footer-grid { grid-template-columns: 1fr; }
   .cart-item { grid-template-columns: 70px 1fr; }
   .cart-item .ci-end { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); padding-top: 12px; }
-  .hero-stats { gap: 22px; }
+  .hero-stats { grid-template-columns: 1fr 1fr; gap: 18px 16px; }
   .section-head { margin-bottom: 32px; }
   .wa-float { width: 54px; height: 54px; right: 16px; bottom: 16px; }
 }
