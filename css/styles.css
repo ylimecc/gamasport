@@ -151,6 +151,7 @@ p { color: var(--text-soft); }
   mask-image: radial-gradient(circle at 70% 40%, #000, transparent 75%);
 }
 .hero-inner { position: relative; z-index: 1; display: grid; grid-template-columns: 1.05fr .95fr; gap: 48px; align-items: center; padding-block: 86px 96px; }
+.hero .eyebrow { margin-bottom: 20px; }
 .hero h1 { color: #fff; }
 .hero h1 .hl { color: var(--lime); }
 .hero p { color: #c4d6cd; font-size: 1.18rem; margin-top: 18px; max-width: 540px; }
