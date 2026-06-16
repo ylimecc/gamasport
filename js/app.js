@@ -151,7 +151,7 @@
         <h3><a href="producto.html?id=${p.id}">${esc(p.name)}</a></h3>
         <p class="product-desc">${esc(p.short)}</p>
         <div class="product-foot">
-          <div class="price">${old}${money(p.price)} <span class="unit">${esc(p.unit)}</span></div>
+          <div class="price">${old}<span class="now">${money(p.price)} <span class="unit">${esc(p.unit)}</span></span></div>
           <button class="btn btn--primary btn--sm" data-add="${p.id}">${icon("plus")} Agregar</button>
         </div>
       </div>
@@ -281,7 +281,7 @@
           <h1>${esc(p.name)}</h1>
           <div class="tag-pill">${icon("star")} 4.9 · Servicio destacado</div>
           <p class="pd-desc">${esc(p.long)}</p>
-          <div class="pd-price">${old}${money(p.price)} <span class="unit">${esc(p.unit)}</span></div>
+          <div class="pd-price">${old}<span class="now">${money(p.price)} <span class="unit">${esc(p.unit)}</span></span></div>
           <ul class="specs">${p.specs.map(s => `<li>${icon("check")}<span>${esc(s)}</span></li>`).join("")}</ul>
           <div class="pd-actions">
             ${qtyControl(1, p.id)}
