@@ -1,9 +1,10 @@
-/* Datos del negocio y catalogo de servicios */
+/* Aquí pongo toda la info del negocio y la lista de servicios, en un solo lugar.
+   Si cambio algo aquí, cambia en todo el sitio. */
 (function () {
   "use strict";
 
-  /* Configuración del negocio */
-  // cambiar por el WhatsApp y telefono reales
+  /* Datos generales (esto sale por todo el sitio: footer, contacto, etc.) */
+  // OJO: poner el WhatsApp y el teléfono de verdad antes de la defensa
   const CONFIG = {
     name: "GamaSport",
     slogan: "Tu pasión, nuestro campo",
@@ -14,15 +15,15 @@
     address: "Anillo Periférico, frente al Coliseum Nacional de Ingenieros",
     city: "Tegucigalpa, Francisco Morazán, Honduras",
     mapsUrl: "https://www.google.com/maps/search/?api=1&query=Coliseum+Nacional+de+Ingenieros+Tegucigalpa",
-    hours: "Lunes a Domingo, 3:00 PM – 9:00 PM",
-    currency: "L",          // Lempira hondureño
-    isvRate: 0.15,          // ISV Honduras 15%
+    hours: "Lunes a Domingo, 3:00 PM a 9:00 PM",
+    currency: "L",          // moneda: Lempira (L)
+    isvRate: 0.15,          // impuesto sobre ventas de Honduras (15%)
     instagram: "https://instagram.com/",
     facebook: "https://facebook.com/",
     tiktok: "https://tiktok.com/"
   };
 
-  /* Categorías */
+  /* las 4 categorías en las que dividí el catálogo */
   const CATEGORIES = [
     { key: "canchas",     name: "Alquiler de Canchas" },
     { key: "torneos",     name: "Torneos y Eventos" },
@@ -30,29 +31,29 @@
     { key: "extras",      name: "Membresías y Extras" }
   ];
 
-  /* Servicios y productos */
+  /* La lista de servicios. Para meter uno nuevo copio un bloque de estos y le cambio los datos */
   const PRODUCTS = [
     {
       id: "GS-101",
       slug: "alquiler-cancha-diurna",
-      name: "Alquiler Cancha Fútbol 5 — Hora Diurna",
+      name: "Alquiler Cancha Fútbol 5 (Hora Diurna)",
       cat: "canchas",
       price: 800, unit: "/ hora", tag: "Más reservado", popular: true,
       art: "cancha-diurna", img: "img/cancha-diurna.jpg",
       short: "Una hora de juego en cancha de fútbol 5 con grama sintética profesional, horario de 3:00 a 6:00 PM.",
       long: "Reserva tu hora de juego en nuestra cancha de fútbol 5 con grama sintética de última generación. Ideal para partidos entre amigos, prácticas de equipo o picados de fin de semana. Incluye uso del parqueo privado y acceso al área de restaurante. Capacidad recomendada de 10 a 12 jugadores.",
-      specs: ["Cancha de fútbol 5 con grama sintética", "Duración: 1 hora continua", "Horario diurno (3:00 – 6:00 PM)", "Parqueo privado incluido", "Acceso al área de restaurante", "Para 10–12 jugadores"]
+      specs: ["Cancha de fútbol 5 con grama sintética", "Duración: 1 hora continua", "Horario diurno (3:00 a 6:00 PM)", "Parqueo privado incluido", "Acceso al área de restaurante", "Para 10 a 12 jugadores"]
     },
     {
       id: "GS-102",
       slug: "alquiler-cancha-nocturna",
-      name: "Alquiler Cancha Fútbol 5 — Hora Nocturna",
+      name: "Alquiler Cancha Fútbol 5 (Hora Nocturna)",
       cat: "canchas",
       price: 1000, unit: "/ hora", tag: "Iluminación LED",
       art: "cancha-nocturna", img: "img/cancha-nocturna.jpg",
       short: "Una hora de juego bajo iluminación nocturna profesional, horario de 6:00 a 9:00 PM.",
       long: "Vive la experiencia del fútbol nocturno en GamaSport. Nuestra cancha cuenta con iluminación LED de alto rendimiento que garantiza visibilidad total para tus partidos de noche. El horario nocturno es el preferido por equipos y ligas amistosas. Incluye parqueo privado y acceso al restaurante.",
-      specs: ["Cancha de fútbol 5 con grama sintética", "Iluminación LED nocturna", "Duración: 1 hora continua", "Horario nocturno (6:00 – 9:00 PM)", "Parqueo privado incluido", "Para 10–12 jugadores"]
+      specs: ["Cancha de fútbol 5 con grama sintética", "Iluminación LED nocturna", "Duración: 1 hora continua", "Horario nocturno (6:00 a 9:00 PM)", "Parqueo privado incluido", "Para 10 a 12 jugadores"]
     },
     {
       id: "GS-103",

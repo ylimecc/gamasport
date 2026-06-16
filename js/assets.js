@@ -1,8 +1,8 @@
-/* Iconos e ilustraciones en SVG */
+/* Todos los iconos y dibujos del sitio, en SVG. Así no cargo imágenes pesadas y nunca se ven rotos */
 (function () {
   "use strict";
 
-  /* Íconos de interfaz (24x24, usan currentColor) */
+  /* los iconitos de la interfaz (24x24; con currentColor toman el color del texto) */
   const I = {
     cart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1.5"/><circle cx="19" cy="21" r="1.5"/><path d="M2.5 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6L21.5 7H6"/></svg>',
     check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>',
@@ -41,7 +41,7 @@
 
   function icon(name) { const s = I[name]; return s ? s.replace("<svg ", '<svg class="gi" ') : ""; }
 
-  /* Logo de marca (monograma GS + balón) */
+  /* el logo: el monograma GS con el balón */
   const LOGO = `<svg class="logo-mark" viewBox="0 0 48 48" role="img" aria-label="GamaSport">
     <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#22c55e"/><stop offset="1" stop-color="#0f7a37"/></linearGradient></defs>
@@ -51,7 +51,7 @@
     <path d="M24 11.5v3M14 18l4 1M14.5 30l3.5-3.5M33.5 30 30 26.5M34 18l-4 1" stroke="#a3e635" stroke-width="1.6" stroke-linecap="round" fill="none"/>
   </svg>`;
 
-  /* Helpers para ilustraciones */
+  /* funcioncitas para armar las ilustraciones sin repetir código */
   const open = (extra) => `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" ${extra || ''}>`;
   const defs = `<defs>
     <linearGradient id="pitch" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f9e4b"/><stop offset="1" stop-color="#0f7a37"/></linearGradient>
@@ -82,7 +82,7 @@
     <rect x="22" y="105" width="42" height="90"/><rect x="336" y="105" width="42" height="90"/>
   </g>`;
 
-  /* Ilustraciones por producto */
+  /* un dibujo distinto para cada tipo de producto */
   const ART = {
     "cancha-diurna": () => open() + defs +
       `<rect width="400" height="300" fill="url(#pitch)"/>
@@ -195,7 +195,7 @@
     return fn() + "</svg>";
   }
 
-  /* mapa de fondo estilizado para contacto */
+  /* el mapa de fondo que dibujo en la página de contacto */
   function mapArt() {
     return open('aria-label="Mapa de ubicación de GamaSport"') + defs +
       `<rect width="400" height="300" fill="#e8efe9"/>
@@ -208,6 +208,6 @@
       + "</svg>";
   }
 
-  /* Exponer en window */
+  /* lo dejo colgado de window para usarlo desde los demás archivos */
   window.GS_ASSETS = { icon, productArt, mapArt, LOGO };
 })();

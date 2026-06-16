@@ -1,11 +1,11 @@
-/* Carrito de compras y render de las paginas */
+/* La lógica del sitio: el carrito y lo que se dibuja en cada página lo manejo desde aquí */
 (function () {
   "use strict";
 
   const { CONFIG, CATEGORIES, PRODUCTS, catName, getProduct } = window.GS_DATA;
   const { icon, productArt, mapArt, LOGO } = window.GS_ASSETS;
 
-  /* Utilidades */
+  /* atajos que uso en todo el archivo para no repetir tanto */
   const $  = (s, c) => (c || document).querySelector(s);
   const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
   const money = (n) => CONFIG.currency + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -19,7 +19,7 @@
     return `https://wa.me/${CONFIG.whatsapp}?text=${text}`;
   }
 
-  /* Carrito (localStorage) */
+  /* El carrito. Lo guardo en el localStorage para que no se pierda al recargar la página */
   const Cart = {
     KEY: "gs_cart_v1",
     get() { try { return JSON.parse(localStorage.getItem(this.KEY)) || []; } catch (e) { return []; } },
@@ -67,7 +67,7 @@
     }
   };
 
-  /* Layout compartido (badge, nav, footer) */
+  /* lo que aparece en todas las páginas: el numerito del carrito, el menú y el footer */
   function syncBadges(pulse) {
     const n = Cart.count();
     $$(".cart-badge").forEach(b => {
@@ -80,7 +80,7 @@
     return `${LOGO}<span class="logo-text">Gama<span>Sport</span></span>`;
   }
 
-  // pone iconos, enlaces y datos del negocio en el HTML
+  // agarra el HTML y le mete los iconos, los enlaces y los datos del negocio
   function hydrate(scope) {
     scope = scope || document;
     $$(".brand[data-logo]", scope).forEach(el => { if (!el.children.length) el.innerHTML = buildLogo(); });
@@ -98,10 +98,10 @@
 
   function initLayout() {
     hydrate(document);
-    // marcar enlace activo
+    // le pongo "active" al enlace de la página en la que estoy parado
     const page = document.body.dataset.page;
     $$(".primary-nav > a[data-nav]").forEach(a => { if (a.dataset.nav === page) a.classList.add("active"); });
-    // menú móvil
+    // el menú hamburguesa del celular
     const toggle = $("#navToggle"), nav = $("#primaryNav");
     if (toggle && nav) {
       toggle.addEventListener("click", () => {
@@ -126,7 +126,7 @@
     els.forEach(e => io.observe(e));
   }
 
-  /* Toast */
+  /* el mensajito que sale abajo cuando agrego algo al carrito */
   let toastWrap;
   function showToast(msg, linkText, linkHref) {
     if (!toastWrap) { toastWrap = document.createElement("div"); toastWrap.className = "toast-wrap"; document.body.appendChild(toastWrap); }
@@ -138,7 +138,7 @@
     setTimeout(() => { t.classList.add("leaving"); setTimeout(() => t.remove(), 260); }, 3200);
   }
 
-  /* Imagen del producto: usa la foto real si existe, si no la ilustración */
+  /* si el producto tiene foto uso la foto; si no, pongo el dibujo SVG */
   function productMedia(p, eager) {
     if (p.img) {
       return `<img src="${p.img}" alt="${esc(p.name)}" loading="${eager ? "eager" : "lazy"}" decoding="async">`;
@@ -146,7 +146,7 @@
     return productArt(p.art);
   }
 
-  /* Componentes reutilizables */
+  /* Pedazos de HTML que repito en varias páginas (tarjetas, control de cantidad) */
   function productCard(p) {
     const old = p.oldPrice ? `<span class="old">${money(p.oldPrice)}</span>` : "";
     return `<article class="product-card reveal">
@@ -189,7 +189,7 @@
     });
   }
 
-  // delegación global para botones "Agregar"
+  // un solo "escuchador" para todos los botones Agregar, en vez de uno por botón
   document.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-add]");
     if (!btn) return;
@@ -200,7 +200,7 @@
     showToast(`${p.name} agregado al carrito`, "Ver carrito →", "carrito.html");
   });
 
-  /* Página: Home */
+  /* inicio (home) */
   function initHome() {
     const grid = $("#featuredGrid");
     if (grid) {
@@ -208,14 +208,14 @@
       grid.innerHTML = featured.map(productCard).join("");
       revealOnScroll();
     }
-    // tarjeta rápida del hero: cambia según la hora (diurno 3–6 PM / nocturno 6–9 PM)
+    // la tarjeta del hero cambia sola según la hora (diurno de 3 a 6 PM, nocturno de 6 a 9 PM)
     const quick = $("#heroQuick");
     if (quick) {
       const h = new Date().getHours();
-      const daytime = h >= 15 && h < 18;        // 3:00 – 5:59 PM
-      const open = h >= 15 && h < 21;           // horario del negocio: 3:00 – 9:00 PM
+      const daytime = h >= 15 && h < 18;        // 3:00 a 5:59 PM
+      const open = h >= 15 && h < 21;           // horario del negocio: 3:00 a 9:00 PM
       const p = getProduct(daytime ? "GS-101" : "GS-102");
-      const sub = daytime ? "Grama sintética · 3–6 PM" : "Iluminación LED · 6–9 PM";
+      const sub = daytime ? "Grama sintética · 3 a 6 PM" : "Iluminación LED · 6 a 9 PM";
       const heroImg = $("#heroPitchImg");
       if (heroImg) { heroImg.src = daytime ? "img/cancha-diurna.jpg" : "img/cancha-nocturna.jpg"; heroImg.alt = p.name; }
       const badge = $("#heroBadge");
@@ -226,7 +226,7 @@
     }
   }
 
-  /* Página: Catálogo */
+  /* catálogo: filtros y buscador */
   function initCatalog() {
     const grid = $("#catalogGrid");
     if (!grid) return;
@@ -271,7 +271,7 @@
     if (fToggle) fToggle.addEventListener("click", () => $(".filters").classList.toggle("show"));
   }
 
-  /* Página: Detalle de producto */
+  /* detalle de un producto */
   function initProduct() {
     const root = $("#productRoot");
     if (!root) return;
@@ -282,7 +282,7 @@
         <a class="btn btn--primary" href="catalogo.html" style="margin-top:16px">Ver catálogo</a></div>`;
       return;
     }
-    document.title = `${p.name} — GamaSport`;
+    document.title = `${p.name}, GamaSport`;
     const old = p.oldPrice ? `<span class="old">${money(p.oldPrice)}</span>` : "";
     root.innerHTML = `
       <nav class="breadcrumb" aria-label="Ruta">
@@ -308,7 +308,7 @@
         </div>
       </div>`;
     wireQty(root);
-    // relacionados
+    // los productos relacionados que muestro abajo
     const rel = $("#relatedGrid");
     if (rel) {
       const others = PRODUCTS.filter(x => x.cat === p.cat && x.id !== p.id)
@@ -318,7 +318,7 @@
     hydrate(root); hydrate($("#relatedSection")); revealOnScroll();
   }
 
-  /* Página: Carrito */
+  /* carrito */
   function initCart() {
     const root = $("#cartRoot");
     if (!root) return;
@@ -380,7 +380,7 @@
     render();
   }
 
-  /* Página: Checkout */
+  /* checkout / pago */
   function pad(n) { return String(n).padStart(2, "0"); }
   function orderNumber() {
     const d = new Date();
@@ -433,7 +433,7 @@
             <legend><span class="step-num">3</span> Método de pago</legend>
             <div class="pay-methods" id="payMethods">
               <label class="pay-opt selected"><input type="radio" name="pago" value="Tarjeta (sandbox)" checked>
-                <span><span class="pm-name">Tarjeta de crédito / débito</span><span class="pm-sub">Visa · Mastercard — modo prueba</span></span><span class="pm-logo">VISA</span></label>
+                <span><span class="pm-name">Tarjeta de crédito / débito</span><span class="pm-sub">Visa · Mastercard (modo prueba)</span></span><span class="pm-logo">VISA</span></label>
               <label class="pay-opt"><input type="radio" name="pago" value="PayPal Sandbox">
                 <span><span class="pm-name">PayPal</span><span class="pm-sub">Pago simulado (sandbox)</span></span><span class="pm-logo">PayPal</span></label>
               <label class="pay-opt"><input type="radio" name="pago" value="Tigo Money">
@@ -473,7 +473,7 @@
 
     hydrate(root);
 
-    // selección visual de método de pago + mostrar tarjeta
+    // marca el método de pago elegido y enseña los campos de tarjeta cuando toca
     const cardFields = $("#cardFields");
     $$(".pay-opt", root).forEach(opt => {
       opt.addEventListener("click", () => {
@@ -484,7 +484,7 @@
       });
     });
 
-    // máscara simple de expiración
+    // le voy dando formato MM/AA a la fecha mientras escriben
     const expInput = root.querySelector('input[name="exp"]');
     if (expInput) expInput.addEventListener("input", () => {
       let v = expInput.value.replace(/\D/g, "").slice(0, 4);
@@ -496,7 +496,7 @@
       cardInput.value = cardInput.value.replace(/\D/g, "").slice(0,16).replace(/(.{4})/g, "$1 ").trim();
     });
 
-    // validación + envío
+    // reviso que todo esté bien y, si sí, "mando" el pedido
     $("#checkoutForm").addEventListener("submit", (e) => {
       e.preventDefault();
       const form = e.target;
@@ -534,7 +534,7 @@
     });
   }
 
-  /* Página: Confirmación */
+  /* confirmación del pedido */
   function fmtDate(iso) {
     try {
       const d = new Date(iso);
@@ -595,7 +595,7 @@
     hydrate(root);
   }
 
-  /* Página: Contacto */
+  /* contacto */
   function initContact() {
     const mapHolder = $("#mapArt");
     if (mapHolder) mapHolder.innerHTML = mapArt();
@@ -611,7 +611,7 @@
     });
   }
 
-  /* Router por página */
+  /* miro qué página es y llamo a la función que le toca */
   document.addEventListener("DOMContentLoaded", () => {
     initLayout();
     const page = document.body.dataset.page;

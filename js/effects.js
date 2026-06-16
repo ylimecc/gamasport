@@ -1,4 +1,4 @@
-/* Efectos visuales opcionales (no afectan el funcionamiento) */
+/* Solo efectos visuales. Si borro este archivo el sitio sigue funcionando igual */
 (function () {
   "use strict";
   const $  = (s, c) => (c || document).querySelector(s);
@@ -10,7 +10,7 @@
 
   ready(function () {
 
-    /* Barra de progreso de scroll */
+    /* la barrita de arriba que se va llenando mientras bajo */
     if (!reduce) {
       const bar = document.createElement("div");
       bar.id = "scrollProgress";
@@ -24,7 +24,7 @@
       onScroll();
     }
 
-    /* Header sólido al hacer scroll */
+    /* el header se pone sólido apenas bajo un poco */
     const header = $(".site-header");
     if (header) {
       const onScrollH = () => header.classList.toggle("scrolled", scrollY > 24);
@@ -32,7 +32,7 @@
       onScrollH();
     }
 
-    /* Foco que sigue el cursor (zonas oscuras) */
+    /* un foco de luz que sigue el mouse en las zonas oscuras */
     if (fine && !reduce) {
       $$(".hero, .section--ink, .page-hero").forEach(zone => {
         zone.addEventListener("pointermove", e => {
@@ -43,7 +43,7 @@
       });
     }
 
-    /* Conteo animado de estadísticas */
+    /* los números del hero suben de 0 hasta su valor */
     const easeOut = t => 1 - Math.pow(1 - t, 3);
     function countUp(el) {
       const target = parseFloat(el.dataset.count);
@@ -70,7 +70,7 @@
       counters.forEach(c => io.observe(c));
     } else counters.forEach(countUp);
 
-    /* Escalonado de revelados por grupo */
+    /* hago que las tarjetas aparezcan una tras otra, no todas de golpe */
     [".features", ".products", ".steps", ".testimonials", ".footer-grid"].forEach(sel => {
       $$(sel).forEach(group => {
         $$(":scope > .reveal", group).forEach((el, i) => el.style.setProperty("--d", (i * 0.08) + "s"));
@@ -78,7 +78,7 @@
     });
     $$(".products .reveal, #featuredGrid .reveal").forEach(el => { if (!el.dataset.reveal) el.dataset.reveal = "scale"; });
 
-    /* Inclinación 3D de tarjetas (solo escritorio) */
+    /* las tarjetas se inclinan siguiendo el mouse (solo en compu) */
     if (fine && !reduce) {
       function onMove(e) {
         const el = e.currentTarget;
@@ -102,7 +102,7 @@
       }
     }
 
-    /* Botones magnéticos (hero y CTA, solo escritorio) */
+    /* los botones se "pegan" un poco al cursor (solo en compu) */
     if (fine && !reduce) {
       $$(".hero .btn, .cta-band .btn").forEach(btn => {
         btn.addEventListener("pointermove", e => {
