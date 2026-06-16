@@ -60,11 +60,7 @@ html { scrollbar-color: var(--green) #0e2630; }
 .orb-1 { width: 260px; height: 260px; background: #22c55e; top: -60px; right: 12%; animation: drift 14s var(--ease) infinite; }
 .orb-2 { width: 200px; height: 200px; background: #0d6efd33; bottom: -40px; left: 8%; animation: drift 18s var(--ease) infinite reverse; }
 @keyframes drift { 0%,100% { transform: translate(0,0); } 50% { transform: translate(26px,-22px); } }
-.hero-jersey {
-  position: absolute; right: 3%; top: 50%; transform: translateY(-50%); z-index: 0; pointer-events: none;
-  font-size: clamp(10rem, 22vw, 20rem); font-weight: 900; line-height: 1; font-style: italic;
-  color: rgba(255,255,255,.04); letter-spacing: -.04em; user-select: none;
-}
+.hero-jersey { display: none; }
 
 /* Cancha del hero: dibujo de líneas + luces + balón */
 .hero-pitch-lines { stroke-dasharray: 1400; stroke-dashoffset: 1400; animation: draw 2.2s var(--ease) .5s forwards; }
