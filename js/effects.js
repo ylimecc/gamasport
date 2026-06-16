@@ -10,20 +10,6 @@
 
   ready(function () {
 
-    /* la barrita de arriba que se va llenando mientras bajo */
-    if (!reduce) {
-      const bar = document.createElement("div");
-      bar.id = "scrollProgress";
-      document.body.appendChild(bar);
-      const onScroll = () => {
-        const h = document.documentElement;
-        const max = h.scrollHeight - h.clientHeight;
-        bar.style.transform = "scaleX(" + (max > 0 ? h.scrollTop / max : 0) + ")";
-      };
-      addEventListener("scroll", onScroll, { passive: true });
-      onScroll();
-    }
-
     /* el header se pone sólido apenas bajo un poco */
     const header = $(".site-header");
     if (header) {
