@@ -143,13 +143,13 @@ p { color: var(--text-soft); }
     radial-gradient(700px 500px at 0% 110%, rgba(163,230,53,.18), transparent 55%),
     linear-gradient(160deg, #0a1c24 0%, #0f2a35 55%, #103a32 100%);
 }
-.hero::after { /* las líneas de la cancha, bien suaves */
-  content: ""; position: absolute; inset: 0; opacity: .12; pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255,255,255,.4) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.4) 1px, transparent 1px);
-  background-size: 54px 54px;
-  mask-image: radial-gradient(circle at 70% 40%, #000, transparent 75%);
+.hero::after { /* el dibujo de la cancha de fondo, bien suave */
+  content: ""; position: absolute; inset: 0; opacity: .14; pointer-events: none;
+  background-image: url("../img/cancha-lineas.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  mask-image: radial-gradient(circle at 65% 45%, #000, transparent 82%);
 }
 .hero-inner { position: relative; z-index: 1; display: grid; grid-template-columns: 1.05fr .95fr; gap: 48px; align-items: center; padding-block: 48px 58px; }
 .hero .eyebrow { margin-bottom: 20px; }
