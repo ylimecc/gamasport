@@ -331,6 +331,7 @@ p { color: var(--text-soft); }
 .pay-opt:hover { border-color: var(--green); }
 .pay-opt input { width: 19px; height: 19px; accent-color: var(--green); }
 .pay-opt.selected { border-color: var(--green); background: #f1faf3; }
+.pay-opt > span:not(.pm-logo) { display: flex; flex-direction: column; gap: 2px; }
 .pay-opt .pm-name { font-weight: 700; color: var(--ink); }
 .pay-opt .pm-sub { font-size: .83rem; color: var(--muted); }
 .pay-opt .pm-logo { margin-left: auto; font-weight: 800; color: var(--muted); font-size: .9rem; }
