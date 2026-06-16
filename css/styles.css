@@ -156,9 +156,9 @@ p { color: var(--text-soft); }
 .hero h1 .hl { color: var(--lime); }
 .hero p { color: #c4d6cd; font-size: 1.18rem; margin-top: 18px; max-width: 540px; }
 .hero-cta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
-.hero-stats { display: grid; grid-template-columns: repeat(4, auto); column-gap: 30px; row-gap: 14px; margin-top: 28px; justify-content: start; }
+.hero-stats { display: grid; grid-template-columns: repeat(4, auto); column-gap: 24px; row-gap: 14px; margin-top: 28px; justify-content: start; }
 .hero-stats .num { font-size: 2.1rem; font-weight: 900; color: #fff; }
-.hero-stats .lbl { font-size: .85rem; color: #9fb6ac; letter-spacing: .03em; }
+.hero-stats .lbl { font-size: .8rem; color: #9fb6ac; letter-spacing: .03em; white-space: nowrap; }
 .hero-badges { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 26px; }
 .hero-badge { display: inline-flex; align-items: center; gap: 7px; font-size: .85rem; font-weight: 600; color: #d7e7df; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); padding: 7px 13px; border-radius: 999px; }
 .hero-badge svg { width: 15px; height: 15px; color: var(--lime); }
