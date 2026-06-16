@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GamaSport — Alquiler de canchas de fútbol 5 en Tegucigalpa</title>
+  <meta name="description" content="Reserva en línea tu cancha de fútbol 5 en Tegucigalpa. Iluminación nocturna, parqueo privado y restaurante. Torneos, eventos y membresías. ¡Tu pasión, nuestro campo!">
+  <meta name="theme-color" content="#0a1c24">
+  <meta property="og:title" content="GamaSport — Tu pasión, nuestro campo">
+  <meta property="og:description" content="Alquiler de canchas de fútbol 5, torneos y eventos en Tegucigalpa. Reserva en línea 24/7.">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body data-page="home">
+  <a href="#main" class="skip-link">Saltar al contenido</a>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand" data-logo aria-label="GamaSport — inicio"></a>
+      <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="primaryNav">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="primary-nav" id="primaryNav" aria-label="Navegación principal">
+        <a href="index.html" data-nav="home">Inicio</a>
+        <a href="catalogo.html" data-nav="catalog">Servicios</a>
+        <a href="index.html#como-funciona">Cómo funciona</a>
+        <a href="contacto.html" data-nav="contact">Contacto</a>
+        <a href="carrito.html" data-nav="cart" class="nav-cart" aria-label="Ver carrito"><span data-icon="cart"></span> Carrito <span class="cart-badge">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-spot" aria-hidden="true"></div>
+      <span class="orb orb-1" aria-hidden="true"></span>
+      <span class="orb orb-2" aria-hidden="true"></span>
+      <span class="hero-jersey" aria-hidden="true">5</span>
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <span class="eyebrow">⚽ Fútbol 5 · Tegucigalpa</span>
+          <h1>Reserva tu cancha y juega <span class="hl">sin complicaciones</span></h1>
+          <p>En GamaSport alquilas tu cancha de fútbol 5 en línea, a cualquier hora. Grama sintética profesional, iluminación nocturna, parqueo privado y restaurante. Tu pasión, nuestro campo.</p>
+          <div class="hero-cta">
+            <a class="btn btn--lime btn--lg" href="catalogo.html">Reservar cancha <span data-icon="arrow" style="width:19px;height:19px;display:inline-flex"></span></a>
+            <a class="btn btn--white btn--lg" href="#como-funciona">Cómo funciona</a>
+          </div>
+          <div class="hero-stats">
+            <div><div class="num" data-count="2">2</div><div class="lbl">Canchas de fútbol 5</div></div>
+            <div><div class="num" data-count="3" data-suffix="+">3+</div><div class="lbl">Años de experiencia</div></div>
+            <div><div class="num">24/7</div><div class="lbl">Reservas en línea</div></div>
+            <div><div class="num" data-count="4.9" data-decimals="1" data-suffix="★">4.9★</div><div class="lbl">Calificación clientes</div></div>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <span class="floating-tag"><span class="live-dot"></span>Disponible hoy</span>
+          <div class="pitch">
+            <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Cancha de fútbol 5 con iluminación nocturna" style="display:block;width:100%">
+              <defs>
+                <linearGradient id="hn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c2230"/><stop offset="1" stop-color="#0a3a2c"/></linearGradient>
+                <radialGradient id="hg" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff7cc" stop-opacity=".9"/><stop offset="1" stop-color="#fff7cc" stop-opacity="0"/></radialGradient>
+              </defs>
+              <rect width="400" height="300" fill="url(#hn)"/>
+              <g fill="#cfe0ff"><circle cx="120" cy="36" r="1.6"/><circle cx="220" cy="28" r="1.6"/><circle cx="300" cy="48" r="1.4"/></g>
+              <g class="hero-pitch-lines" stroke="#eafff1" stroke-opacity=".4" stroke-width="3" fill="none">
+                <rect x="22" y="40" width="356" height="220" rx="4"/><line x1="200" y1="40" x2="200" y2="260"/>
+                <circle cx="200" cy="150" r="40"/><circle cx="200" cy="150" r="4" fill="#eafff1" stroke="none"/>
+                <rect x="22" y="105" width="42" height="90"/><rect x="336" y="105" width="42" height="90"/>
+              </g>
+              <g class="flood"><rect x="44" y="70" width="8" height="150" fill="#10303d"/><polygon points="30,62 66,62 60,78 36,78" fill="#1a4250"/><circle cx="48" cy="70" r="46" fill="url(#hg)"/></g>
+              <g class="flood flood-2"><rect x="348" y="70" width="8" height="150" fill="#10303d"/><polygon points="334,62 370,62 364,78 340,78" fill="#1a4250"/><circle cx="352" cy="70" r="46" fill="url(#hg)"/></g>
+              <g class="hero-ball" transform="translate(200,180)"><circle r="24" fill="#fff"/><path d="M0 -13 12.5 -4 7.7 10.8h-15.4L-12.5 -4z" fill="#13321f"/><circle r="24" fill="none" stroke="#cfd8d2" stroke-width="1.2"/></g>
+            </svg>
+          </div>
+          <div class="quick" id="heroQuick"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LED ticker de estadio -->
+    <div class="ticker" aria-label="Beneficios de GamaSport">
+      <div class="ticker-mask">
+        <span><span data-icon="clock"></span> Reserva 24/7 en línea</span><span class="dot"></span>
+        <span><span data-icon="bolt"></span> Iluminación LED nocturna</span><span class="dot"></span>
+        <span><span data-icon="shield"></span> Pago seguro HTTPS</span><span class="dot"></span>
+        <span><span data-icon="truck"></span> Parqueo privado gratis</span><span class="dot"></span>
+        <span><span data-icon="trophy"></span> Torneos y eventos</span><span class="dot"></span>
+        <span><span data-icon="heart"></span> Restaurante en sitio</span><span class="dot"></span>
+        <span><span data-icon="whatsapp"></span> Soporte por WhatsApp</span><span class="dot"></span>
+        <span aria-hidden="true"><span data-icon="clock"></span> Reserva 24/7 en línea</span><span class="dot" aria-hidden="true"></span>
+        <span aria-hidden="true"><span data-icon="bolt"></span> Iluminación LED nocturna</span><span class="dot" aria-hidden="true"></span>
+        <span aria-hidden="true"><span data-icon="shield"></span> Pago seguro HTTPS</span><span class="dot" aria-hidden="true"></span>
+        <span aria-hidden="true"><span data-icon="truck"></span> Parqueo privado gratis</span><span class="dot" aria-hidden="true"></span>
+        <span aria-hidden="true"><span data-icon="trophy"></span> Torneos y eventos</span><span class="dot" aria-hidden="true"></span>
+        <span aria-hidden="true"><span data-icon="heart"></span> Restaurante en sitio</span><span class="dot" aria-hidden="true"></span>
+        <span aria-hidden="true"><span data-icon="whatsapp"></span> Soporte por WhatsApp</span><span class="dot" aria-hidden="true"></span>
+      </div>
+    </div>
+
+    <!-- Features / categorías -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Qué ofrecemos</span>
+          <h2>Todo para tu día de juego</h2>
+          <p>Mucho más que una cancha: una experiencia deportiva completa para ti y tu equipo.</p>
+        </div>
+        <div class="features">
+          <a class="feature reveal" href="catalogo.html?cat=canchas" style="text-decoration:none">
+            <div class="ic"><span data-icon="ball"></span></div>
+            <h3>Alquiler de canchas</h3>
+            <p>Fútbol 5 con grama sintética profesional, en horario diurno y nocturno con iluminación LED.</p>
+          </a>
+          <a class="feature reveal" href="catalogo.html?cat=torneos" style="text-decoration:none">
+            <div class="ic"><span data-icon="trophy"></span></div>
+            <h3>Torneos y eventos</h3>
+            <p>Inscribe a tu equipo en torneos relámpago u organiza eventos deportivos privados.</p>
+          </a>
+          <a class="feature reveal" href="catalogo.html?cat=restaurante" style="text-decoration:none">
+            <div class="ic"><span data-icon="heart"></span></div>
+            <h3>Restaurante</h3>
+            <p>Combos, boquitas para compartir y bebidas frías. Pide anticipado con tu reserva.</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured products -->
+    <section class="section section--soft">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Reserva en segundos</span>
+          <h2>Nuestros servicios más populares</h2>
+          <p>Elige, agrega al carrito y confirma tu reserva con pago en línea seguro.</p>
+        </div>
+        <div class="products" id="featuredGrid"></div>
+        <div class="text-center" style="margin-top:38px">
+          <a class="btn btn--primary btn--lg" href="catalogo.html">Ver catálogo completo <span data-icon="arrow" style="width:19px;height:19px;display:inline-flex"></span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cómo funciona -->
+    <section class="section section--ink" id="como-funciona">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Así de fácil</span>
+          <h2 style="color:#fff">Reserva en 4 pasos</h2>
+          <p style="color:#a9c0b7">Sin llamadas ni esperas. Reserva tu cancha desde el celular en menos de un minuto.</p>
+        </div>
+        <div class="steps">
+          <div class="step reveal"><span class="step-no">1</span><div class="step-ic"><span data-icon="search"></span></div><h3>Elige tu servicio</h3><p>Explora canchas, torneos, combos del restaurante y membresías.</p></div>
+          <div class="step reveal"><span class="step-no">2</span><div class="step-ic"><span data-icon="cart"></span></div><h3>Agrega al carrito</h3><p>Selecciona la cantidad de horas o productos que necesitas.</p></div>
+          <div class="step reveal"><span class="step-no">3</span><div class="step-ic"><span data-icon="calendar"></span></div><h3>Indica fecha y hora</h3><p>Escoge el día y el horario disponible para tu reserva.</p></div>
+          <div class="step reveal"><span class="step-no">4</span><div class="step-ic"><span data-icon="checkCircle"></span></div><h3>Paga y confirma</h3><p>Pago seguro en línea y recibe tu número de pedido al instante.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonios -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Lo que dicen</span>
+          <h2>Equipos que ya juegan con nosotros</h2>
+        </div>
+        <div class="testimonials">
+          <div class="tcard reveal">
+            <div class="stars">★★★★★</div>
+            <blockquote>"Reservamos la cancha nocturna por la web y todo fue rapidísimo. La iluminación es excelente y el parqueo seguro."</blockquote>
+            <div class="who"><div class="avatar">CM</div><div><div class="name">Carlos Medina</div><div class="role">Capitán, Los Catrachos FC</div></div></div>
+          </div>
+          <div class="tcard reveal">
+            <div class="stars">★★★★★</div>
+            <blockquote>"Organizamos el torneo de la empresa con GamaSport. La logística impecable y las boquitas del restaurante, un golazo."</blockquote>
+            <div class="who"><div class="avatar">AF</div><div><div class="name">Andrea Flores</div><div class="role">RR.HH., Tegus Tech</div></div></div>
+          </div>
+          <div class="tcard reveal">
+            <div class="stars">★★★★★</div>
+            <blockquote>"La membresía GamaPro vale cada lempira. Juego cada semana con descuento y reservo antes que todos."</blockquote>
+            <div class="who"><div class="avatar">JR</div><div><div class="name">José Rodríguez</div><div class="role">Miembro GamaPro</div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA band -->
+    <section class="section" style="padding-top:0">
+      <div class="container">
+        <div class="cta-band reveal">
+          <div>
+            <h2>¿Listo para jugar?</h2>
+            <p>Aparta tu cancha hoy mismo. Disponibilidad en tiempo real y confirmación inmediata.</p>
+          </div>
+          <a class="btn btn--lime btn--lg" href="catalogo.html">Reservar ahora</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="brand" data-logo aria-label="GamaSport"></a>
+          <p>Centro deportivo de fútbol 5 en Tegucigalpa. Reserva tu cancha en línea, organiza torneos y disfruta de nuestro restaurante.</p>
+          <div class="footer-social">
+            <a data-social="instagram" aria-label="Instagram" data-icon="instagram" target="_blank" rel="noopener"></a>
+            <a data-social="facebook" aria-label="Facebook" data-icon="facebook" target="_blank" rel="noopener"></a>
+            <a data-social="tiktok" aria-label="TikTok" data-icon="tiktok" target="_blank" rel="noopener"></a>
+          </div>
+        </div>
+        <div>
+          <h4>Servicios</h4>
+          <div class="footer-links">
+            <a href="catalogo.html?cat=canchas">Alquiler de canchas</a>
+            <a href="catalogo.html?cat=torneos">Torneos y eventos</a>
+            <a href="catalogo.html?cat=restaurante">Restaurante</a>
+            <a href="catalogo.html?cat=extras">Membresías y extras</a>
+          </div>
+        </div>
+        <div>
+          <h4>Enlaces</h4>
+          <div class="footer-links">
+            <a href="index.html">Inicio</a>
+            <a href="contacto.html">Contacto</a>
+            <a href="privacidad.html">Política de privacidad</a>
+            <a href="terminos.html">Términos y condiciones</a>
+          </div>
+        </div>
+        <div>
+          <h4>Contacto</h4>
+          <ul class="footer-contact">
+            <li><span data-icon="pin"></span><span><span data-cfg="address"></span>, <span data-cfg="city"></span></span></li>
+            <li><span data-icon="clock"></span><span data-cfg="hours"></span></li>
+            <li><span data-icon="phone"></span><a data-phone-link data-cfg="phoneDisplay"></a></li>
+            <li><span data-icon="mail"></span><a data-mail-link data-cfg="email"></a></li>
+          </ul>
+          <div class="pay-icons"><span>VISA</span><span>Mastercard</span><span>PayPal</span><span>Tigo Money</span></div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© <span data-year></span> GamaSport. Todos los derechos reservados.</span>
+        <span>Proyecto académico · DIA-309 Negocios Electrónicos · UNAH · II PAC 2026</span>
+      </div>
+    </div>
+  </footer>
+
+  <a class="wa-float" data-wa="¡Hola GamaSport! Quiero reservar una cancha." aria-label="Escríbenos por WhatsApp" target="_blank" rel="noopener" data-icon="whatsapp"></a>
+
+  <script src="js/assets.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/effects.js" defer></script>
+</body>
+</html>

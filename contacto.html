@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contacto y soporte — GamaSport</title>
+  <meta name="description" content="Contáctanos por WhatsApp, teléfono o correo. Ubicación en el Anillo Periférico, Tegucigalpa. Horario de 3:00 a 9:00 PM.">
+  <meta name="theme-color" content="#0a1c24">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body data-page="contact">
+  <a href="#main" class="skip-link">Saltar al contenido</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand" data-logo aria-label="GamaSport — inicio"></a>
+      <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="primaryNav"><span></span><span></span><span></span></button>
+      <nav class="primary-nav" id="primaryNav" aria-label="Navegación principal">
+        <a href="index.html" data-nav="home">Inicio</a>
+        <a href="catalogo.html" data-nav="catalog">Servicios</a>
+        <a href="index.html#como-funciona">Cómo funciona</a>
+        <a href="contacto.html" data-nav="contact">Contacto</a>
+        <a href="carrito.html" data-nav="cart" class="nav-cart" aria-label="Ver carrito"><span data-icon="cart"></span> Carrito <span class="cart-badge">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="container">
+        <nav class="breadcrumb" aria-label="Ruta"><a href="index.html">Inicio</a> <span data-icon="arrowR"></span> <span>Contacto</span></nav>
+        <h1>Hablemos</h1>
+        <p>¿Dudas con tu reserva o quieres organizar un torneo? Escríbenos por WhatsApp y te respondemos al instante.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="contact-layout">
+          <!-- Columna info -->
+          <div>
+            <div class="info-card">
+              <div class="ic"><span data-icon="whatsapp"></span></div>
+              <div><h3>WhatsApp (más rápido)</h3><p>Reservas y atención inmediata.</p>
+                <a class="btn btn--primary btn--sm" style="margin-top:8px" data-wa="¡Hola GamaSport! Quiero más información." target="_blank" rel="noopener">Abrir WhatsApp</a></div>
+            </div>
+            <div class="info-card">
+              <div class="ic"><span data-icon="phone"></span></div>
+              <div><h3>Teléfono</h3><p><a data-phone-link data-cfg="phoneDisplay"></a></p></div>
+            </div>
+            <div class="info-card">
+              <div class="ic"><span data-icon="mail"></span></div>
+              <div><h3>Correo</h3><p><a data-mail-link data-cfg="email"></a></p></div>
+            </div>
+            <div class="info-card">
+              <div class="ic"><span data-icon="pin"></span></div>
+              <div><h3>Ubicación</h3><p><span data-cfg="address"></span>, <span data-cfg="city"></span></p>
+                <a class="btn btn--ghost btn--sm" style="margin-top:8px" data-maps target="_blank" rel="noopener">Ver en Google Maps</a></div>
+            </div>
+
+            <div class="info-card" style="display:block">
+              <h3 style="margin-bottom:12px"><span data-icon="clock" style="display:inline-flex;width:20px;height:20px;vertical-align:-4px;color:var(--green-dark)"></span> Horario de atención</h3>
+              <table class="hours-table">
+                <tr><td>Lunes – Viernes</td><td>3:00 PM – 9:00 PM</td></tr>
+                <tr><td>Sábado</td><td>3:00 PM – 9:00 PM</td></tr>
+                <tr><td>Domingo</td><td>3:00 PM – 9:00 PM</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- Columna formulario + mapa -->
+          <div>
+            <form class="checkout-form" id="contactForm" novalidate>
+              <fieldset class="fieldset">
+                <legend><span class="step-num"><span data-icon="mail"></span></span> Envíanos un mensaje</legend>
+                <div class="form-grid">
+                  <div class="field col-2"><label>Nombre <span class="req">*</span></label><input name="nombre" required></div>
+                  <div class="field"><label>Correo</label><input name="email" type="email" placeholder="opcional"></div>
+                  <div class="field"><label>Teléfono</label><input name="telefono" type="tel" placeholder="opcional"></div>
+                  <div class="field col-2"><label>Mensaje <span class="req">*</span></label><textarea name="mensaje" rows="4" required placeholder="¿En qué te ayudamos?"></textarea></div>
+                </div>
+                <button type="submit" class="btn btn--primary btn--block btn--lg" style="margin-top:18px"><span data-icon="whatsapp"></span> Enviar por WhatsApp</button>
+                <p class="note" style="text-align:center;color:var(--muted);font-size:.82rem;margin-top:12px">Tu mensaje se abrirá en WhatsApp para enviarlo a nuestro equipo.</p>
+              </fieldset>
+            </form>
+
+            <div class="map-card">
+              <div class="map-art" id="mapArt"></div>
+              <div class="map-foot">
+                <span><strong>GamaSport</strong> — <span data-cfg="address"></span></span>
+                <a class="btn btn--ghost btn--sm" data-maps target="_blank" rel="noopener">Cómo llegar</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="brand" data-logo aria-label="GamaSport"></a>
+          <p>Centro deportivo de fútbol 5 en Tegucigalpa. Reserva tu cancha en línea, organiza torneos y disfruta de nuestro restaurante.</p>
+          <div class="footer-social">
+            <a data-social="instagram" aria-label="Instagram" data-icon="instagram" target="_blank" rel="noopener"></a>
+            <a data-social="facebook" aria-label="Facebook" data-icon="facebook" target="_blank" rel="noopener"></a>
+            <a data-social="tiktok" aria-label="TikTok" data-icon="tiktok" target="_blank" rel="noopener"></a>
+          </div>
+        </div>
+        <div><h4>Servicios</h4><div class="footer-links">
+          <a href="catalogo.html?cat=canchas">Alquiler de canchas</a>
+          <a href="catalogo.html?cat=torneos">Torneos y eventos</a>
+          <a href="catalogo.html?cat=restaurante">Restaurante</a>
+          <a href="catalogo.html?cat=extras">Membresías y extras</a></div></div>
+        <div><h4>Enlaces</h4><div class="footer-links">
+          <a href="index.html">Inicio</a>
+          <a href="contacto.html">Contacto</a>
+          <a href="privacidad.html">Política de privacidad</a>
+          <a href="terminos.html">Términos y condiciones</a></div></div>
+        <div><h4>Contacto</h4>
+          <ul class="footer-contact">
+            <li><span data-icon="pin"></span><span><span data-cfg="address"></span>, <span data-cfg="city"></span></span></li>
+            <li><span data-icon="clock"></span><span data-cfg="hours"></span></li>
+            <li><span data-icon="phone"></span><a data-phone-link data-cfg="phoneDisplay"></a></li>
+            <li><span data-icon="mail"></span><a data-mail-link data-cfg="email"></a></li>
+          </ul>
+          <div class="pay-icons"><span>VISA</span><span>Mastercard</span><span>PayPal</span><span>Tigo Money</span></div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© <span data-year></span> GamaSport. Todos los derechos reservados.</span>
+        <span>Proyecto académico · DIA-309 Negocios Electrónicos · UNAH · II PAC 2026</span>
+      </div>
+    </div>
+  </footer>
+
+  <a class="wa-float" data-wa="¡Hola GamaSport! Quiero reservar una cancha." aria-label="Escríbenos por WhatsApp" target="_blank" rel="noopener" data-icon="whatsapp"></a>
+
+  <script src="js/assets.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/effects.js" defer></script>
+</body>
+</html>
