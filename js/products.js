@@ -93,7 +93,7 @@
       name: "Cumpleaños Deportivo (Cancha 2h + Área)",
       cat: "torneos",
       price: 2800, unit: "/ paquete", tag: "Celebración",
-      art: "cumpleanos",
+      art: "cumpleanos", img: "img/cumpleanos.jpg",
       short: "Celebra tu cumpleaños jugando: 2 horas de cancha más área reservada en el restaurante.",
       long: "El plan ideal para festejar a lo grande. Incluye 2 horas de cancha de fútbol 5 y un área reservada en nuestro restaurante para la celebración. Agrega decoración deportiva básica y la posibilidad de personalizar tu combo de comida. Una experiencia distinta para niños, jóvenes y adultos.",
       specs: ["2 horas de cancha de fútbol 5", "Área reservada en el restaurante", "Decoración deportiva básica", "Combos de comida personalizables", "Parqueo privado para invitados", "Hasta 20 personas"]
@@ -115,7 +115,7 @@
       name: "Boquitas para Equipo (Nachos + Alitas)",
       cat: "restaurante",
       price: 380, unit: "/ porción", tag: "Para compartir",
-      art: "boquitas",
+      art: "boquitas", img: "img/boquitas.jpg",
       short: "Tabla de nachos con queso y alitas BBQ para compartir entre 6 personas.",
       long: "La picada perfecta para compartir tras el juego. Incluye una generosa tabla de nachos con queso fundido, pico de gallo y guacamole, más 12 alitas en salsa BBQ o picante. Pensada para 6 personas. Acompáñala con bebidas frías del restaurante.",
       specs: ["Nachos con queso fundido", "Pico de gallo y guacamole", "12 alitas (BBQ o picante)", "Ideal para 6 personas", "Disponible en el área de restaurante"]
@@ -126,7 +126,7 @@
       name: "Hidratación Deportiva (6 Bebidas)",
       cat: "restaurante",
       price: 150, unit: "/ paquete", tag: "6 unidades",
-      art: "hidratacion",
+      art: "hidratacion", img: "img/hidratacion.jpg",
       short: "Paquete de 6 bebidas hidratantes frías, listas para tu equipo durante el partido.",
       long: "Mantén a tu equipo hidratado y rindiendo al máximo. Este paquete incluye 6 bebidas hidratantes frías (mezcla de agua, bebidas isotónicas y gaseosas a elección). Agrégalo a tu reserva y recógelas frías al llegar a la cancha.",
       specs: ["6 bebidas frías a elección", "Mezcla de agua, isotónicas y gaseosas", "Entregadas frías", "Se agrega a la reserva de cancha"]
@@ -137,7 +137,7 @@
       name: "Membresía Mensual GamaPro",
       cat: "extras",
       price: 2900, unit: "/ mes", tag: "Mejor valor",
-      art: "membresia",
+      art: "membresia", img: "img/membresia.jpg",
       short: "4 horas de cancha al mes, 10% de descuento permanente y reserva prioritaria.",
       long: "Para los que no fallan ni un fin de semana. La Membresía GamaPro te da 4 horas de cancha al mes (diurno o nocturno), un 10% de descuento permanente en restaurante y servicios, reserva prioritaria de horarios y acceso anticipado a torneos. La forma más inteligente de jugar todo el mes.",
       specs: ["4 horas de cancha al mes", "10% de descuento permanente", "Reserva prioritaria de horarios", "Acceso anticipado a torneos", "Carné digital de miembro", "Renovación mensual flexible"]
@@ -148,7 +148,7 @@
       name: "Alquiler de Balón + Set de Petos",
       cat: "extras",
       price: 120, unit: "/ partido", tag: "Complemento",
-      art: "balon-petos",
+      art: "balon-petos", img: "img/balon-petos.jpg",
       short: "Balón oficial de fútbol 5 más set de 10 petos para diferenciar a los equipos.",
       long: "¿Llegaste sin equipo? Nosotros te lo prestamos. Este complemento incluye un balón oficial de fútbol 5 en buen estado y un set de 10 petos de colores para diferenciar a los dos equipos. Se agrega fácilmente a tu reserva de cancha.",
       specs: ["1 balón oficial de fútbol 5", "Set de 10 petos de colores", "Por partido reservado", "Se agrega a la reserva de cancha"]
