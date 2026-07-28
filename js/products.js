@@ -156,11 +156,25 @@
     }
   ];
 
+  /* Promociones vigentes. Se muestran en promociones.html y en el inicio.
+     El cupón de cada una se escribe en el carrito para que aplique el descuento. */
+  const PROMOS = [
+    { id: "PR-1", code: "SEMANA15", off: 15, title: "15% de descuento entre semana",
+      desc: "Reserva tu cancha de lunes a jueves y paga menos. Escribe el cupón SEMANA15 en el carrito antes de pagar.",
+      tag: "Canchas" },
+    { id: "PR-2", code: "GAMA10", off: 10, title: "10% de bienvenida para equipos nuevos",
+      desc: "Si es la primera reserva de tu equipo, usa el cupón GAMA10 y estrena cancha con descuento.",
+      tag: "Bienvenida" },
+    { id: "PR-3", code: "EQUIPO15", off: 15, title: "15% en paquetes y torneos",
+      desc: "Aplica el cupón EQUIPO15 en el Paquete Picado, el torneo relámpago o el cumpleaños deportivo.",
+      tag: "Torneos y paquetes" }
+  ];
+
   function catName(key) {
     const c = CATEGORIES.find(x => x.key === key);
     return c ? c.name : key;
   }
   function getProduct(id) { return PRODUCTS.find(p => p.id === id) || null; }
 
-  window.GS_DATA = { CONFIG, CATEGORIES, PRODUCTS, catName, getProduct };
+  window.GS_DATA = { CONFIG, CATEGORIES, PRODUCTS, PROMOS, catName, getProduct };
 })();

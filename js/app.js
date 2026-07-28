@@ -2,7 +2,7 @@
 (function () {
   "use strict";
 
-  const { CONFIG, CATEGORIES, PRODUCTS, catName, getProduct } = window.GS_DATA;
+  const { CONFIG, CATEGORIES, PRODUCTS, PROMOS, catName, getProduct } = window.GS_DATA;
   const { icon, productArt, mapArt, LOGO } = window.GS_ASSETS;
 
   /* atajos que uso en todo el archivo para no repetir tanto */
@@ -12,11 +12,18 @@
   const param = (k) => new URLSearchParams(location.search).get(k);
   const esc = (s) => String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
 
-  const COUPONS = { "GAMA10": 0.10, "EQUIPO15": 0.15 };
+  const COUPONS = { "GAMA10": 0.10, "EQUIPO15": 0.15, "SEMANA15": 0.15 };
 
   function waLink(msg) {
     const text = encodeURIComponent(msg || `¡Hola ${CONFIG.name}! Quisiera información para reservar.`);
     return `https://wa.me/${CONFIG.whatsapp}?text=${text}`;
+  }
+
+  // arma un mailto con el resumen del pedido, para mandarlo por correo
+  function mailtoOrder(o) {
+    const items = o.items.map(i => `- ${i.name} x${i.qty} (${money(i.lineTotal)})`).join("\n");
+    const body = `Hola GamaSport,\n\nConfirmo mi pedido ${o.number}.\nFecha de reserva: ${o.reserva.fecha} a las ${o.reserva.hora}.\nA nombre de: ${o.customer.nombre}\n\nServicios:\n${items}\n\nTotal: ${money(o.totals.total)} (${o.payment})\n\nSaludos.`;
+    return `mailto:${CONFIG.email}?subject=${encodeURIComponent("Pedido " + o.number + " - " + o.customer.nombre)}&body=${encodeURIComponent(body)}`;
   }
 
   /* El carrito. Lo guardo en el localStorage para que no se pierda al recargar la página */
@@ -67,6 +74,75 @@
     }
   };
 
+  /* Cuentas de usuario. Para la demo las guardo en el localStorage;
+     el siguiente paso natural sería moverlas a Firebase Authentication. */
+  const Auth = {
+    UKEY: "gs_users_v1",
+    SKEY: "gs_session_v1",
+    // codificación simple para no guardar la clave tal cual (es una demo, no producción)
+    code(s) { let h = 7; for (let i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) >>> 0; } return "u" + h.toString(16); },
+    users() { try { return JSON.parse(localStorage.getItem(this.UKEY)) || []; } catch (e) { return []; } },
+    saveUsers(list) { localStorage.setItem(this.UKEY, JSON.stringify(list)); },
+    find(email) { return this.users().find(u => u.email === (email || "").trim().toLowerCase()) || null; },
+    register(nombre, email, pass) {
+      email = (email || "").trim().toLowerCase();
+      if (nombre.trim().length < 3) return "Escribe tu nombre completo.";
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return "El correo no es válido.";
+      if (pass.length < 6) return "La contraseña debe tener al menos 6 caracteres.";
+      if (this.find(email)) return "Ya existe una cuenta con ese correo.";
+      const list = this.users();
+      list.push({ nombre: nombre.trim(), email, pass: this.code(pass), creado: new Date().toISOString() });
+      this.saveUsers(list);
+      this.setSession(email);
+      return null;
+    },
+    login(email, pass) {
+      const u = this.find(email);
+      if (!u || u.pass !== this.code(pass)) return "Correo o contraseña incorrectos.";
+      this.setSession(u.email);
+      return null;
+    },
+    reset(email, pass) {
+      const u = this.find(email);
+      if (!u) return "No hay ninguna cuenta con ese correo.";
+      if (pass.length < 6) return "La contraseña nueva debe tener al menos 6 caracteres.";
+      u.pass = this.code(pass);
+      this.saveUsers(this.users().map(x => x.email === u.email ? u : x));
+      return null;
+    },
+    setSession(email) { localStorage.setItem(this.SKEY, email); },
+    current() { const e = localStorage.getItem(this.SKEY); return e ? this.find(e) : null; },
+    logout() { localStorage.removeItem(this.SKEY); }
+  };
+
+  /* Historial de reservas. Cada pedido confirmado se agrega a la lista
+     para poder verlo en Mi cuenta y en el panel administrativo. */
+  const Orders = {
+    KEY: "gs_orders_v1",
+    all() { try { return JSON.parse(localStorage.getItem(this.KEY)) || []; } catch (e) { return []; } },
+    add(order) { const l = this.all(); l.unshift(order); localStorage.setItem(this.KEY, JSON.stringify(l)); },
+    setStatus(number, estado) {
+      const l = this.all().map(o => o.number === number ? { ...o, estado } : o);
+      localStorage.setItem(this.KEY, JSON.stringify(l));
+    },
+    byEmail(email) { return this.all().filter(o => o.customer && o.customer.email === email); }
+  };
+
+  /* Horarios bloqueados por el administrador (mantenimiento, ligas privadas, etc.) */
+  const Blocked = {
+    KEY: "gs_blocked_v1",
+    all() { try { return JSON.parse(localStorage.getItem(this.KEY)) || []; } catch (e) { return []; } },
+    add(fecha, hora) { const l = this.all(); if (!l.find(b => b.fecha === fecha && b.hora === hora)) { l.push({ fecha, hora }); localStorage.setItem(this.KEY, JSON.stringify(l)); } },
+    remove(fecha, hora) { localStorage.setItem(this.KEY, JSON.stringify(this.all().filter(b => !(b.fecha === fecha && b.hora === hora)))); }
+  };
+
+  // horas que ya no se pueden reservar en una fecha (reservas hechas aquí + bloqueos del admin)
+  function busySlots(fecha) {
+    const res = Orders.all().filter(o => o.reserva && o.reserva.fecha === fecha && o.estado !== "cancelada").map(o => o.reserva.hora);
+    const blk = Blocked.all().filter(b => b.fecha === fecha).map(b => b.hora);
+    return res.concat(blk);
+  }
+
   /* lo que aparece en todas las páginas: el numerito del carrito, el menú y el footer */
   function syncBadges(pulse) {
     const n = Cart.count();
@@ -96,8 +172,48 @@
     $$("[data-year]", scope).forEach(el => el.textContent = new Date().getFullYear());
   }
 
+  /* Meto en el menú los enlaces de Promociones y Mi cuenta desde aquí,
+     así no tengo que editar el nav de cada página HTML. */
+  function injectNav() {
+    const nav = $("#primaryNav");
+    if (!nav || nav.querySelector('[data-nav="promos"]')) return;
+    const cartLink = nav.querySelector(".nav-cart");
+    const promos = document.createElement("a");
+    promos.href = "promociones.html"; promos.dataset.nav = "promos"; promos.textContent = "Promociones";
+    const account = document.createElement("a");
+    const user = Auth.current();
+    account.href = "cuenta.html"; account.dataset.nav = "account";
+    account.textContent = user ? ("Hola, " + user.nombre.split(" ")[0]) : "Mi cuenta";
+    const contact = nav.querySelector('[data-nav="contact"]');
+    nav.insertBefore(promos, contact || cartLink);
+    nav.insertBefore(account, cartLink);
+  }
+
+  /* El boletín del footer también lo inyecto para no repetirlo 12 veces */
+  function injectNewsletter() {
+    const brand = $(".site-footer .footer-brand");
+    if (!brand || $("#newsForm")) return;
+    const box = document.createElement("div");
+    box.className = "newsletter";
+    box.innerHTML = `<h4>Boletín de GamaSport</h4>
+      <p>Promociones y torneos en tu correo. Sin spam.</p>
+      <form id="newsForm"><input type="email" required placeholder="Tu correo electrónico" aria-label="Correo para el boletín"><button class="btn btn--lime btn--sm" type="submit">Suscribirme</button></form>`;
+    brand.appendChild(box);
+    $("#newsForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const mail = e.target.querySelector("input").value.trim().toLowerCase();
+      let list = [];
+      try { list = JSON.parse(localStorage.getItem("gs_news_v1")) || []; } catch (err) {}
+      if (!list.includes(mail)) { list.push(mail); localStorage.setItem("gs_news_v1", JSON.stringify(list)); }
+      e.target.reset();
+      showToast("¡Listo! Te avisaremos de las próximas promociones.");
+    });
+  }
+
   function initLayout() {
     hydrate(document);
+    injectNav();
+    injectNewsletter();
     // le pongo "active" al enlace de la página en la que estoy parado
     const page = document.body.dataset.page;
     $$(".primary-nav > a[data-nav]").forEach(a => { if (a.dataset.nav === page) a.classList.add("active"); });
@@ -223,6 +339,53 @@
       quick.innerHTML = `
         <div class="quick-row"><div><div class="q-name">${esc(p.name)}</div><div class="q-sub">${sub}</div></div><div class="q-price">${money(p.price)}</div></div>
         <a class="btn btn--primary btn--block" href="producto.html?id=${p.id}">Reservar ahora ${icon("arrow")}</a>`;
+    }
+
+    // carrusel del hero: roto la foto de la cancha entre varias, con sus puntitos
+    const heroImg = $("#heroPitchImg");
+    const pitch = heroImg && heroImg.closest(".pitch");
+    if (heroImg && pitch) {
+      const fotos = [
+        { src: "img/cancha-nocturna.jpg", alt: "Cancha de fútbol 5 con iluminación nocturna" },
+        { src: "img/cancha-diurna.jpg",   alt: "Cancha de fútbol 5 en horario diurno" },
+        { src: "img/torneo.jpg",          alt: "Torneo relámpago en GamaSport" },
+        { src: "img/combo.jpg",           alt: "Restaurante de GamaSport" }
+      ];
+      let idx = fotos.findIndex(f => heroImg.src.includes(f.src.split("/")[1]));
+      if (idx < 0) idx = 0;
+      const dots = document.createElement("div");
+      dots.className = "carousel-dots";
+      fotos.forEach((f, i) => {
+        const b = document.createElement("button");
+        b.type = "button"; b.setAttribute("aria-label", "Foto " + (i + 1));
+        b.addEventListener("click", () => go(i, true));
+        dots.appendChild(b);
+      });
+      pitch.insertAdjacentElement("afterend", dots);
+      let timer = null;
+      function paint() { Array.from(dots.children).forEach((d, i) => d.classList.toggle("on", i === idx)); }
+      function go(i, manual) {
+        idx = (i + fotos.length) % fotos.length;
+        heroImg.src = fotos[idx].src; heroImg.alt = fotos[idx].alt;
+        paint();
+        if (manual) { clearInterval(timer); timer = setInterval(() => go(idx + 1), 5000); }
+      }
+      paint();
+      timer = setInterval(() => go(idx + 1), 5000);
+      pitch.addEventListener("pointerenter", () => clearInterval(timer));
+      pitch.addEventListener("pointerleave", () => { clearInterval(timer); timer = setInterval(() => go(idx + 1), 5000); });
+    }
+
+    // franja de promociones destacadas (los datos viven en products.js)
+    const strip = $("#promoStrip");
+    if (strip && PROMOS && PROMOS.length) {
+      strip.innerHTML = PROMOS.slice(0, 3).map(pr => `
+        <a class="promo-card reveal" href="promociones.html">
+          <span class="promo-off">-${pr.off}%</span>
+          <div><h3>${esc(pr.title)}</h3><p>${esc(pr.desc)}</p>
+          <span class="promo-code">Cupón: ${esc(pr.code)}</span></div>
+        </a>`).join("");
+      revealOnScroll();
     }
   }
 
@@ -452,6 +615,10 @@
               </div>
               <div class="sandbox-note">${icon("info")}<span><strong>Pasarela en modo prueba (sandbox).</strong> No se procesan cobros reales. Usa la tarjeta de prueba <strong>4242 4242 4242 4242</strong>, cualquier fecha futura y cualquier CVV.</span></div>
             </div>
+            <div class="paypal-box" id="paypalBox">
+              <div class="pp-logo">Pay<span>Pal</span> <em>SANDBOX</em></div>
+              <p>Al confirmar, simulamos el flujo de PayPal en modo prueba: no se abre una cuenta real ni se cobra dinero. El pedido queda registrado como pagado con PayPal Sandbox.</p>
+            </div>
           </fieldset>
           <button type="submit" class="btn btn--primary btn--block btn--lg">${icon("lock")} Confirmar y pagar ${money(t.total)}</button>
         </form>
@@ -473,16 +640,45 @@
 
     hydrate(root);
 
-    // marca el método de pago elegido y enseña los campos de tarjeta cuando toca
+    // marca el método de pago elegido y enseña los campos de tarjeta o el aviso de PayPal
     const cardFields = $("#cardFields");
+    const paypalBox = $("#paypalBox");
     $$(".pay-opt", root).forEach(opt => {
       opt.addEventListener("click", () => {
         $$(".pay-opt", root).forEach(o => o.classList.remove("selected"));
         opt.classList.add("selected");
         const val = $("input", opt).value;
         cardFields.classList.toggle("show", val === "Tarjeta (sandbox)");
+        if (paypalBox) paypalBox.classList.toggle("show", val === "PayPal Sandbox");
       });
     });
+
+    // si el cliente tiene cuenta, le relleno nombre y correo para no hacerlo escribir de más
+    const me = Auth.current();
+    if (me) {
+      const nIn = root.querySelector('input[name="nombre"]');
+      const eIn = root.querySelector('input[name="email"]');
+      if (nIn && !nIn.value) nIn.value = me.nombre;
+      if (eIn && !eIn.value) eIn.value = me.email;
+    }
+
+    // disponibilidad: al elegir la fecha, las horas ya reservadas o bloqueadas se deshabilitan
+    const fechaInput = root.querySelector('input[name="fecha"]');
+    const horaSel = root.querySelector('select[name="hora"]');
+    function refreshSlots() {
+      if (!fechaInput.value) return;
+      const busy = busySlots(fechaInput.value);
+      Array.from(horaSel.options).forEach(op => {
+        if (!op.value && op.value !== "") return;
+        if (op.value === "") return;
+        const base = op.value;
+        const taken = busy.includes(base);
+        op.disabled = taken;
+        op.textContent = base + (taken ? " (ocupado)" : "");
+      });
+      if (horaSel.selectedOptions[0] && horaSel.selectedOptions[0].disabled) horaSel.value = "";
+    }
+    if (fechaInput && horaSel) { fechaInput.addEventListener("change", refreshSlots); }
 
     // le voy dando formato MM/AA a la fecha mientras escriben
     const expInput = root.querySelector('input[name="exp"]');
@@ -522,15 +718,29 @@
       const order = {
         number: orderNumber(),
         dateISO: new Date().toISOString(),
-        customer: { nombre: val("nombre"), email: val("email"), telefono: val("telefono") },
+        customer: { nombre: val("nombre"), email: val("email").toLowerCase(), telefono: val("telefono") },
         reserva: { fecha: val("fecha"), hora: val("hora"), notas: val("notas") },
         payment: pago,
+        estado: "pendiente",
         items: lines.map(l => ({ id: l.id, name: l.name, qty: l.qty, price: l.price, unit: l.unit, lineTotal: l.lineTotal })),
         totals: t
       };
-      localStorage.setItem("gs_last_order", JSON.stringify(order));
-      Cart.clear();
-      location.href = "confirmacion.html";
+      function finish() {
+        localStorage.setItem("gs_last_order", JSON.stringify(order));
+        Orders.add(order);
+        Cart.clear();
+        location.href = "confirmacion.html";
+      }
+      if (pago === "PayPal Sandbox") {
+        // simulo el salto a PayPal: overlay azul un momento y de regreso con el pago aprobado
+        const ov = document.createElement("div");
+        ov.className = "pay-overlay";
+        ov.innerHTML = `<div class="pay-overlay-card"><div class="pp-logo">Pay<span>Pal</span> <em>SANDBOX</em></div><div class="pp-spin"></div><p>Procesando el pago de prueba…</p></div>`;
+        document.body.appendChild(ov);
+        setTimeout(finish, 1600);
+      } else {
+        finish();
+      }
     });
   }
 
@@ -587,6 +797,8 @@
           <p style="text-align:center;color:var(--text-soft);font-size:.92rem;margin-bottom:20px">${icon("info")} Recibirás los detalles en ${esc(order.customer.email)}. Te esperamos en ${CONFIG.address}.</p>
           <div class="confirm-actions">
             <a class="btn btn--primary" href="${waLink(waMsg)}" target="_blank" rel="noopener">${icon("whatsapp")} Confirmar por WhatsApp</a>
+            <a class="btn btn--ghost" href="${mailtoOrder(order)}">${icon("mail")} Enviar por correo</a>
+            <a class="btn btn--ghost" href="cuenta.html#reservas">${icon("user")} Ver mis reservas</a>
             <button class="btn btn--ghost" onclick="window.print()">${icon("print")} Imprimir comprobante</button>
             <a class="btn btn--ghost" href="catalogo.html">${icon("arrow")} Seguir reservando</a>
           </div>
@@ -611,13 +823,221 @@
     });
   }
 
+  /* ---- página de promociones ---- */
+  function initPromos() {
+    const grid = $("#promoGrid");
+    if (!grid) return;
+    grid.innerHTML = PROMOS.map(pr => `
+      <article class="promo-card reveal">
+        <span class="promo-off">-${pr.off}%</span>
+        <div>
+          <span class="product-cat">${esc(pr.tag)}</span>
+          <h3>${esc(pr.title)}</h3>
+          <p>${esc(pr.desc)}</p>
+          <div class="promo-foot">
+            <span class="promo-code">Cupón: ${esc(pr.code)}</span>
+            <a class="btn btn--primary btn--sm" href="catalogo.html">Usar en el catálogo</a>
+          </div>
+        </div>
+      </article>`).join("");
+    revealOnScroll();
+  }
+
+  /* ---- Mi cuenta: registro, inicio de sesión y mis reservas ---- */
+  function ordersTable(list) {
+    if (!list.length) return `<div class="empty-state">${icon("calendar")}<h3>Aún no tienes reservas</h3><p>Cuando hagas una reserva con este correo, aparecerá aquí.</p><a class="btn btn--primary" href="catalogo.html" style="margin-top:14px">Reservar ahora</a></div>`;
+    return `<div class="orders-wrap"><table class="orders-table">
+      <thead><tr><th>Pedido</th><th>Reserva</th><th>Servicios</th><th>Total</th><th>Estado</th></tr></thead>
+      <tbody>${list.map(o => `<tr>
+        <td data-th="Pedido"><strong>${esc(o.number)}</strong></td>
+        <td data-th="Reserva">${esc(o.reserva.fecha)}<br>${esc(o.reserva.hora)}</td>
+        <td data-th="Servicios">${o.items.map(i => esc(i.name) + " ×" + i.qty).join("<br>")}</td>
+        <td data-th="Total">${money(o.totals.total)}</td>
+        <td data-th="Estado"><span class="estado-pill est-${esc(o.estado || "pendiente")}">${esc(o.estado || "pendiente")}</span></td>
+      </tr>`).join("")}</tbody></table></div>`;
+  }
+
+  function initAccount() {
+    const root = $("#accountRoot");
+    if (!root) return;
+    const user = Auth.current();
+
+    if (!user) {
+      root.innerHTML = `
+        <div class="auth-card">
+          <div class="auth-tabs">
+            <button class="on" data-tab="login">Iniciar sesión</button>
+            <button data-tab="signup">Crear cuenta</button>
+            <button data-tab="reset">Recuperar</button>
+          </div>
+          <form class="auth-form" id="loginForm" data-view="login">
+            <div class="field"><label>Correo electrónico</label><input name="email" type="email" required></div>
+            <div class="field"><label>Contraseña</label><input name="pass" type="password" required></div>
+            <button class="btn btn--primary btn--block">${icon("user")} Entrar</button>
+          </form>
+          <form class="auth-form" id="signupForm" data-view="signup" hidden>
+            <div class="field"><label>Nombre completo</label><input name="nombre" required></div>
+            <div class="field"><label>Correo electrónico</label><input name="email" type="email" required></div>
+            <div class="field"><label>Contraseña (mínimo 6 caracteres)</label><input name="pass" type="password" required></div>
+            <button class="btn btn--primary btn--block">${icon("plus")} Crear mi cuenta</button>
+          </form>
+          <form class="auth-form" id="resetForm" data-view="reset" hidden>
+            <p class="auth-note">Escribe tu correo y una contraseña nueva. En un sistema real este paso enviaría un enlace de verificación a tu correo.</p>
+            <div class="field"><label>Correo electrónico</label><input name="email" type="email" required></div>
+            <div class="field"><label>Contraseña nueva</label><input name="pass" type="password" required></div>
+            <button class="btn btn--primary btn--block">Restablecer</button>
+          </form>
+          <p class="auth-msg" id="authMsg" role="alert"></p>
+          <p class="auth-note">Las cuentas de esta demo se guardan en tu navegador. El plan de la Fase 2 contempla migrarlas a Firebase Authentication.</p>
+        </div>`;
+      const msg = $("#authMsg");
+      $$(".auth-tabs button", root).forEach(b => b.addEventListener("click", () => {
+        $$(".auth-tabs button", root).forEach(x => x.classList.remove("on"));
+        b.classList.add("on");
+        $$(".auth-form", root).forEach(f => f.hidden = f.dataset.view !== b.dataset.tab);
+        msg.textContent = "";
+      }));
+      const val = (f, n) => (f.querySelector(`[name="${n}"]`) || {}).value || "";
+      $("#loginForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const err = Auth.login(val(e.target, "email"), val(e.target, "pass"));
+        if (err) { msg.textContent = err; return; }
+        location.reload();
+      });
+      $("#signupForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const err = Auth.register(val(e.target, "nombre"), val(e.target, "email"), val(e.target, "pass"));
+        if (err) { msg.textContent = err; return; }
+        showToast("¡Cuenta creada! Bienvenido a GamaSport.");
+        setTimeout(() => location.reload(), 600);
+      });
+      $("#resetForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const err = Auth.reset(val(e.target, "email"), val(e.target, "pass"));
+        msg.textContent = err || "Contraseña actualizada. Ya puedes iniciar sesión.";
+      });
+      return;
+    }
+
+    const mine = Orders.byEmail(user.email);
+    root.innerHTML = `
+      <div class="account-head reveal">
+        <div class="avatar avatar--lg">${esc(user.nombre.trim().slice(0, 1).toUpperCase())}</div>
+        <div>
+          <h2>Hola, ${esc(user.nombre.split(" ")[0])}</h2>
+          <p>${esc(user.email)} · miembro desde ${new Date(user.creado).toLocaleDateString("es-HN")}</p>
+        </div>
+        <button class="btn btn--ghost btn--sm" id="logoutBtn">${icon("logout")} Cerrar sesión</button>
+      </div>
+      <h3 id="reservas" class="account-sub">Mis reservas</h3>
+      ${ordersTable(mine)}
+      <p class="auth-note" style="margin-top:14px">${icon("info")} Aquí se listan las reservas hechas con tu correo en este navegador.</p>`;
+    $("#logoutBtn").addEventListener("click", () => { Auth.logout(); location.reload(); });
+    hydrate(root);
+  }
+
+  /* ---- panel administrativo (demo protegida con credenciales fijas) ---- */
+  const ADMIN_MAIL = "admin@gamasport.hn";
+  const ADMIN_PASS = "gamasport2026";
+
+  function initAdmin() {
+    const root = $("#adminRoot");
+    if (!root) return;
+
+    if (sessionStorage.getItem("gs_admin") !== "1") {
+      root.innerHTML = `
+        <div class="auth-card">
+          <h2 style="margin-bottom:6px">Panel administrativo</h2>
+          <p class="auth-note">Acceso solo para el personal de GamaSport.</p>
+          <form class="auth-form" id="adminForm">
+            <div class="field"><label>Correo</label><input name="email" type="email" required placeholder="admin@gamasport.hn"></div>
+            <div class="field"><label>Contraseña</label><input name="pass" type="password" required></div>
+            <button class="btn btn--primary btn--block">${icon("lock")} Entrar al panel</button>
+          </form>
+          <p class="auth-msg" id="adminMsg" role="alert"></p>
+          <p class="auth-note">Demo académica: admin@gamasport.hn / gamasport2026</p>
+        </div>`;
+      $("#adminForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const em = e.target.querySelector('[name="email"]').value.trim().toLowerCase();
+        const pw = e.target.querySelector('[name="pass"]').value;
+        if (em === ADMIN_MAIL && pw === ADMIN_PASS) { sessionStorage.setItem("gs_admin", "1"); render(); }
+        else { $("#adminMsg").textContent = "Credenciales incorrectas."; }
+      });
+      return;
+    }
+    render();
+
+    function render() {
+      const orders = Orders.all();
+      const activos = orders.filter(o => o.estado !== "cancelada");
+      const ingresos = activos.reduce((s, o) => s + (o.totals ? o.totals.total : 0), 0);
+      const bloqueos = Blocked.all();
+      const estados = ["pendiente", "confirmada", "atendida", "cancelada"];
+      root.innerHTML = `
+        <div class="admin-top">
+          <h2>Panel administrativo</h2>
+          <button class="btn btn--ghost btn--sm" id="adminOut">${icon("logout")} Salir</button>
+        </div>
+        <div class="admin-stats">
+          <div class="stat"><div class="num">${orders.length}</div><div class="lbl">Reservas totales</div></div>
+          <div class="stat"><div class="num">${orders.filter(o => o.estado === "pendiente").length}</div><div class="lbl">Pendientes</div></div>
+          <div class="stat"><div class="num">${money(ingresos)}</div><div class="lbl">Ingresos registrados</div></div>
+          <div class="stat"><div class="num">${bloqueos.length}</div><div class="lbl">Horarios bloqueados</div></div>
+        </div>
+
+        <h3 class="account-sub">Reservas</h3>
+        ${orders.length ? `<div class="orders-wrap"><table class="orders-table">
+          <thead><tr><th>Pedido</th><th>Cliente</th><th>Reserva</th><th>Total</th><th>Pago</th><th>Estado</th></tr></thead>
+          <tbody>${orders.map(o => `<tr>
+            <td data-th="Pedido"><strong>${esc(o.number)}</strong></td>
+            <td data-th="Cliente">${esc(o.customer.nombre)}<br><small>${esc(o.customer.telefono)}</small></td>
+            <td data-th="Reserva">${esc(o.reserva.fecha)} ${esc(o.reserva.hora)}</td>
+            <td data-th="Total">${money(o.totals.total)}</td>
+            <td data-th="Pago">${esc(o.payment)}</td>
+            <td data-th="Estado"><select class="estado-sel est-${esc(o.estado || "pendiente")}" data-order="${esc(o.number)}">
+              ${estados.map(s => `<option ${s === (o.estado || "pendiente") ? "selected" : ""}>${s}</option>`).join("")}
+            </select></td>
+          </tr>`).join("")}</tbody></table></div>`
+        : `<div class="empty-state">${icon("calendar")}<h3>Sin reservas todavía</h3><p>Cuando los clientes reserven, aparecerán aquí.</p></div>`}
+
+        <h3 class="account-sub">Bloquear horarios (mantenimiento, ligas, eventos)</h3>
+        <form class="block-form" id="blockForm">
+          <input type="date" name="fecha" required>
+          <select name="hora" required>${["3:00 PM","4:00 PM","5:00 PM","6:00 PM","7:00 PM","8:00 PM"].map(h => `<option>${h}</option>`).join("")}</select>
+          <button class="btn btn--primary btn--sm">Bloquear</button>
+        </form>
+        ${bloqueos.length ? `<ul class="block-list">${bloqueos.map(b => `<li>${esc(b.fecha)} · ${esc(b.hora)} <button class="ci-remove" data-unblock="${esc(b.fecha)}|${esc(b.hora)}">${icon("trash")} Quitar</button></li>`).join("")}</ul>` : ""}
+        <p class="auth-note" style="margin-top:16px">${icon("info")} Panel de demostración: los datos viven en este navegador. El plan de la Fase 2 contempla moverlos a Firebase Firestore.</p>`;
+
+      $("#adminOut").addEventListener("click", () => { sessionStorage.removeItem("gs_admin"); location.reload(); });
+      $$(".estado-sel", root).forEach(sel => sel.addEventListener("change", () => {
+        Orders.setStatus(sel.dataset.order, sel.value);
+        showToast(`Pedido ${sel.dataset.order}: ${sel.value}.`);
+        render();
+      }));
+      $("#blockForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const f = e.target.querySelector('[name="fecha"]').value;
+        const h = e.target.querySelector('[name="hora"]').value;
+        if (f) { Blocked.add(f, h); render(); }
+      });
+      $$("[data-unblock]", root).forEach(b => b.addEventListener("click", () => {
+        const [f, h] = b.dataset.unblock.split("|");
+        Blocked.remove(f, h); render();
+      }));
+      hydrate(root);
+    }
+  }
+
   /* miro qué página es y llamo a la función que le toca */
   document.addEventListener("DOMContentLoaded", () => {
     initLayout();
     const page = document.body.dataset.page;
     ({ home: initHome, catalog: initCatalog, product: initProduct, cart: initCart,
-       checkout: initCheckout, confirm: initConfirm, contact: initContact }[page] || function(){})();
+       checkout: initCheckout, confirm: initConfirm, contact: initContact,
+       promos: initPromos, account: initAccount, admin: initAdmin }[page] || function(){})();
   });
 
-  window.GS = { Cart, money, showToast };
+  window.GS = { Cart, money, showToast, Auth, Orders, Blocked, busySlots };
 })();
