@@ -324,56 +324,60 @@
       grid.innerHTML = featured.map(productCard).join("");
       revealOnScroll();
     }
-    // la tarjeta del hero cambia sola según la hora (diurno de 3 a 6 PM, nocturno de 6 a 9 PM)
+    /* Carrusel del hero. Cada foto va con su servicio, así la tarjeta de abajo
+       (nombre, precio y botón) siempre corresponde a la foto que se está viendo.
+       La primera que se muestra depende de la hora: diurna de 3 a 6, nocturna de 6 a 9. */
     const quick = $("#heroQuick");
-    if (quick) {
+    const heroImg = $("#heroPitchImg");
+    const pitch = heroImg && heroImg.closest(".pitch");
+    if (quick && heroImg) {
       const h = new Date().getHours();
       const daytime = h >= 15 && h < 18;        // 3:00 a 5:59 PM
       const open = h >= 15 && h < 21;           // horario del negocio: 3:00 a 9:00 PM
-      const p = getProduct(daytime ? "GS-101" : "GS-102");
-      const sub = daytime ? "Grama sintética · 3 a 6 PM" : "Iluminación LED · 6 a 9 PM";
-      const heroImg = $("#heroPitchImg");
-      if (heroImg) { heroImg.src = daytime ? "img/cancha-diurna.jpg" : "img/cancha-nocturna.jpg"; heroImg.alt = p.name; }
       const badge = $("#heroBadge");
       if (badge) badge.textContent = open ? "Disponible ahora" : "Reserva para hoy";
-      quick.innerHTML = `
-        <div class="quick-row"><div><div class="q-name">${esc(p.name)}</div><div class="q-sub">${sub}</div></div><div class="q-price">${money(p.price)}</div></div>
-        <a class="btn btn--primary btn--block" href="producto.html?id=${p.id}">Reservar ahora ${icon("arrow")}</a>`;
-    }
 
-    // carrusel del hero: roto la foto de la cancha entre varias, con sus puntitos
-    const heroImg = $("#heroPitchImg");
-    const pitch = heroImg && heroImg.closest(".pitch");
-    if (heroImg && pitch) {
-      const fotos = [
-        { src: "img/cancha-nocturna.jpg", alt: "Cancha de fútbol 5 con iluminación nocturna" },
-        { src: "img/cancha-diurna.jpg",   alt: "Cancha de fútbol 5 en horario diurno" },
-        { src: "img/torneo.jpg",          alt: "Torneo relámpago en GamaSport" },
-        { src: "img/combo.jpg",           alt: "Restaurante de GamaSport" }
+      const slides = [
+        { id: "GS-102", src: "img/cancha-nocturna.jpg", alt: "Cancha de fútbol 5 con iluminación nocturna", sub: "Iluminación LED · 6 a 9 PM" },
+        { id: "GS-101", src: "img/cancha-diurna.jpg",   alt: "Cancha de fútbol 5 en horario diurno",        sub: "Grama sintética · 3 a 6 PM" },
+        { id: "GS-201", src: "img/torneo.jpg",          alt: "Torneo relámpago de fútbol 5 en GamaSport",   sub: "Por equipo · 3 partidos garantizados" },
+        { id: "GS-301", src: "img/combo.jpg",           alt: "Combo del restaurante de GamaSport",          sub: "Del restaurante · para después del partido" }
       ];
-      let idx = fotos.findIndex(f => heroImg.src.includes(f.src.split("/")[1]));
-      if (idx < 0) idx = 0;
-      const dots = document.createElement("div");
-      dots.className = "carousel-dots";
-      fotos.forEach((f, i) => {
-        const b = document.createElement("button");
-        b.type = "button"; b.setAttribute("aria-label", "Foto " + (i + 1));
-        b.addEventListener("click", () => go(i, true));
-        dots.appendChild(b);
-      });
-      pitch.insertAdjacentElement("afterend", dots);
-      let timer = null;
-      function paint() { Array.from(dots.children).forEach((d, i) => d.classList.toggle("on", i === idx)); }
-      function go(i, manual) {
-        idx = (i + fotos.length) % fotos.length;
-        heroImg.src = fotos[idx].src; heroImg.alt = fotos[idx].alt;
-        paint();
-        if (manual) { clearInterval(timer); timer = setInterval(() => go(idx + 1), 5000); }
+      let idx = daytime ? 1 : 0;
+
+      function render(i) {
+        idx = (i + slides.length) % slides.length;
+        const s = slides[idx];
+        const p = getProduct(s.id);
+        if (!p) return;
+        heroImg.src = s.src; heroImg.alt = s.alt;
+        quick.innerHTML = `
+          <div class="quick-row"><div><div class="q-name">${esc(p.name)}</div><div class="q-sub">${esc(s.sub)}</div></div><div class="q-price">${money(p.price)}</div></div>
+          <a class="btn btn--primary btn--block" href="producto.html?id=${p.id}">Reservar ahora ${icon("arrow")}</a>`;
+        if (dots) Array.from(dots.children).forEach((d, n) => d.classList.toggle("on", n === idx));
       }
-      paint();
-      timer = setInterval(() => go(idx + 1), 5000);
-      pitch.addEventListener("pointerenter", () => clearInterval(timer));
-      pitch.addEventListener("pointerleave", () => { clearInterval(timer); timer = setInterval(() => go(idx + 1), 5000); });
+
+      // los puntitos para cambiar de foto a mano
+      let dots = null, timer = null;
+      if (pitch) {
+        dots = document.createElement("div");
+        dots.className = "carousel-dots";
+        slides.forEach((s, i) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.setAttribute("aria-label", "Ver " + s.alt);
+          b.addEventListener("click", () => { render(i); restart(); });
+          dots.appendChild(b);
+        });
+        pitch.insertAdjacentElement("afterend", dots);
+      }
+      function restart() { clearInterval(timer); timer = setInterval(() => render(idx + 1), 6000); }
+      render(idx);
+      restart();
+      if (pitch) {
+        pitch.addEventListener("pointerenter", () => clearInterval(timer));
+        pitch.addEventListener("pointerleave", restart);
+      }
     }
 
     // franja de promociones destacadas (los datos viven en products.js)
