@@ -6,11 +6,11 @@ Tienda y reservas en línea para **GamaSport**, centro de canchas de fútbol 5 e
 
 ## Qué ofrece
 
-- 📅 **Reserva de canchas** — flujo de reserva en 4 pasos, directo desde el navegador
-- 🏆 **Torneos y eventos** — organización de ligas y eventos privados
-- 🍔 **Restaurante** — para el tercer tiempo
-- 💳 **Membresías** — planes para equipos que juegan seguido
-- 🛒 **Tienda en línea** — catálogo, carrito y checkout completos
+- 📅 **Reserva de canchas**: flujo de reserva en 4 pasos, directo desde el navegador
+- 🏆 **Torneos y eventos**: organización de ligas y eventos privados
+- 🍔 **Restaurante**: para el tercer tiempo
+- 💳 **Membresías**: planes para equipos que juegan seguido
+- 🛒 **Tienda en línea**: catálogo, carrito y checkout completos
 
 ## Páginas
 
@@ -28,4 +28,4 @@ HTML + CSS + JavaScript puro, sin frameworks ni build. Hospedado en GitHub Pages
 
 ---
 
-© 2026 GamaSport · Tegucigalpa, Honduras — *¡Tu pasión, nuestro campo!*
+© 2026 GamaSport · Tegucigalpa, Honduras - *¡Tu pasión, nuestro campo!*
