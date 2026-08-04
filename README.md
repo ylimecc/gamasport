@@ -52,16 +52,6 @@ sitio sigue funcionando y todo se fusiona cuando vuelve la conexión.
 
 El pago con tarjeta y PayPal está en **modo de prueba (sandbox)**: no se procesan cobros reales.
 
-## Para probarlo
-
-Basta con abrir `index.html` en el navegador. Si prefieres servirlo:
-
-```bash
-python -m http.server 8000
-```
-
-Y entrar a `http://localhost:8000`.
-
 **Cupones:** `GAMA10` (10 %) · `EQUIPO15` (15 %) · `SEMANA15` (15 %)
 **Tarjeta de prueba:** 4242 4242 4242 4242, cualquier fecha futura y cualquier CVV
 
