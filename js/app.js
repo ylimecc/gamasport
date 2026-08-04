@@ -974,7 +974,7 @@
 
     const mine = Orders.byEmail(user.email);
     root.innerHTML = `
-      <div class="account-head reveal">
+      <div class="account-head">
         <div class="avatar avatar--lg">${esc(user.nombre.trim().slice(0, 1).toUpperCase())}</div>
         <div>
           <h2>Hola, ${esc(user.nombre.split(" ")[0])}</h2>
@@ -986,7 +986,7 @@
       ${ordersTable(mine)}
       <p class="auth-note" style="margin-top:14px">${icon("info")} Aquí aparecen las reservas hechas con tu correo.</p>`;
     $("#logoutBtn").addEventListener("click", () => { Auth.logout(); location.reload(); });
-    hydrate(root);
+    hydrate(root); revealOnScroll();
   }
 
   /* ---- panel administrativo (demo protegida con credenciales fijas) ---- */
