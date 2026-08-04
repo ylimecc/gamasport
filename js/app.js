@@ -382,6 +382,7 @@
         </header>
         <div class="bot-body" id="botBody" aria-live="polite"></div>
         <div class="bot-chips" id="botChips"></div>
+        <a class="bot-wa" id="botWa" target="_blank" rel="noopener">${icon("whatsapp")} Escribir por WhatsApp</a>
         <form class="bot-form" id="botForm">
           <input id="botInput" type="text" autocomplete="off" placeholder="Escribe tu pregunta...">
           <button class="btn btn--primary btn--sm" type="submit">Enviar</button>
@@ -390,6 +391,7 @@
     document.body.appendChild(wrap);
 
     const panel = $("#botPanel"), body = $("#botBody"), chips = $("#botChips"), fab = $("#botFab");
+    $("#botWa").href = waLink("¡Hola GamaSport! Quiero reservar una cancha.");
 
     function decir(texto, quien) {
       const b = document.createElement("div");
