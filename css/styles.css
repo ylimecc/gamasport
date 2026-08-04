@@ -623,6 +623,21 @@ p { color: var(--text-soft); }
 .about-grid img { width: 100%; border-radius: var(--radius-lg, 20px); box-shadow: 0 18px 40px -22px rgba(10,28,36,.4); }
 .about-vals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 26px; }
 
+/* disponibilidad de cada servicio */
+.stock-line { display: flex; align-items: center; gap: 7px; font-size: .82rem; font-weight: 700; color: var(--text-soft, #51625b); margin: 2px 0 10px; }
+.stock-line--lg { font-size: .9rem; margin: 10px 0 16px; }
+.stock-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.stock-dot.si { background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.15); }
+.stock-dot.poco { background: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
+.stock-dot.no { background: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,.15); }
+.product-card .btn[disabled], .pd-actions .btn[disabled] { opacity: .55; cursor: not-allowed; }
+
+/* campos del inventario en el panel */
+.inv-in { width: 92px; padding: 7px 9px; border: 1.5px solid var(--line, #dbe7df); border-radius: 8px; font: inherit; font-size: .88rem; }
+.inv-in:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(34,197,94,.15); }
+.inv-check { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; }
+.inv-check input { width: 17px; height: 17px; accent-color: var(--green); }
+
 /* responsivo de lo nuevo */
 @media (max-width: 900px) {
   .promo-strip, .promo-grid { grid-template-columns: 1fr; }

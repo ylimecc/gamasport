@@ -128,6 +128,40 @@
     byEmail(email) { return this.all().filter(o => o.customer && o.customer.email === email); }
   };
 
+  /* Inventario. El administrador puede cambiar precio, cupos disponibles y si el
+     servicio se muestra o no; esos cambios se guardan aparte y se aplican encima
+     de la lista base de products.js, así el catálogo original nunca se pierde. */
+  const Inventory = {
+    KEY: "gs_inv_v1",
+    all() { try { return JSON.parse(localStorage.getItem(this.KEY)) || {}; } catch (e) { return {}; } },
+    set(id, patch) {
+      const o = this.all();
+      o[id] = Object.assign({}, o[id] || {}, patch);
+      localStorage.setItem(this.KEY, JSON.stringify(o));
+      applyInventory();
+    },
+    reset() { localStorage.removeItem(this.KEY); applyInventory(); }
+  };
+
+  function applyInventory() {
+    const o = Inventory.all();
+    PRODUCTS.forEach(p => {
+      if (!p._base) p._base = { price: p.price, stock: p.stock };
+      const ov = o[p.id] || {};
+      p.price  = ov.price != null ? ov.price : p._base.price;
+      p.stock  = ov.stock != null ? ov.stock : p._base.stock;
+      p.activo = ov.activo != null ? ov.activo : true;
+    });
+  }
+
+  // texto y color del estado de disponibilidad de un servicio
+  function availability(p) {
+    if (p.activo === false) return { txt: "No disponible", cls: "no" };
+    if (!p.stock)           return { txt: "Agotado",       cls: "no" };
+    if (p.stock <= 3)       return { txt: "Últimos " + p.stock, cls: "poco" };
+    return { txt: "Disponible", cls: "si" };
+  }
+
   /* Horarios bloqueados por el administrador (mantenimiento, ligas privadas, etc.) */
   const Blocked = {
     KEY: "gs_blocked_v1",
@@ -211,6 +245,7 @@
   }
 
   function initLayout() {
+    applyInventory();
     hydrate(document);
     injectNav();
     injectNewsletter();
@@ -265,6 +300,7 @@
   /* Pedazos de HTML que repito en varias páginas (tarjetas, control de cantidad) */
   function productCard(p) {
     const old = p.oldPrice ? `<span class="old">${money(p.oldPrice)}</span>` : "";
+    const av = availability(p);
     return `<article class="product-card reveal">
       <div class="product-thumb">
         <a href="producto.html?id=${p.id}" aria-label="${esc(p.name)}">${productMedia(p)}</a>
@@ -274,18 +310,22 @@
         <span class="product-cat">${esc(catName(p.cat))}</span>
         <h3><a href="producto.html?id=${p.id}">${esc(p.name)}</a></h3>
         <p class="product-desc">${esc(p.short)}</p>
+        <div class="stock-line"><span class="stock-dot ${av.cls}"></span>${esc(av.txt)}</div>
         <div class="product-foot">
           <div class="price">${old}<span class="now">${money(p.price)} <span class="unit">${esc(p.unit)}</span></span></div>
-          <button class="btn btn--primary btn--sm" data-add="${p.id}">${icon("plus")} Agregar</button>
+          ${av.cls === "no"
+            ? `<button class="btn btn--ghost btn--sm" disabled>Sin cupos</button>`
+            : `<button class="btn btn--primary btn--sm" data-add="${p.id}">${icon("plus")} Agregar</button>`}
         </div>
       </div>
     </article>`;
   }
 
-  function qtyControl(value, id) {
-    return `<div class="qty" data-qty>
+  function qtyControl(value, id, max) {
+    const tope = Math.max(1, Math.min(50, max == null ? 50 : max));
+    return `<div class="qty" data-qty data-max="${tope}">
       <button type="button" data-step="-1" aria-label="Disminuir">−</button>
-      <input type="number" min="1" max="50" value="${value}" aria-label="Cantidad" ${id ? `data-id="${id}"` : ""}>
+      <input type="number" min="1" max="${tope}" value="${value}" aria-label="Cantidad" ${id ? `data-id="${id}"` : ""}>
       <button type="button" data-step="1" aria-label="Aumentar">+</button>
     </div>`;
   }
@@ -293,13 +333,14 @@
   function wireQty(scope, onChange) {
     $$("[data-qty]", scope).forEach(box => {
       const input = $("input", box);
+      const tope = parseInt(box.dataset.max, 10) || 50;
       $$("button", box).forEach(btn => btn.addEventListener("click", () => {
         let v = parseInt(input.value, 10) || 1;
-        v = Math.min(50, Math.max(1, v + parseInt(btn.dataset.step, 10)));
+        v = Math.min(tope, Math.max(1, v + parseInt(btn.dataset.step, 10)));
         input.value = v; onChange && onChange(v, input);
       }));
       input.addEventListener("change", () => {
-        let v = parseInt(input.value, 10) || 1; v = Math.min(50, Math.max(1, v));
+        let v = parseInt(input.value, 10) || 1; v = Math.min(tope, Math.max(1, v));
         input.value = v; onChange && onChange(v, input);
       });
     });
@@ -311,6 +352,7 @@
     if (!btn) return;
     const p = getProduct(btn.dataset.add);
     if (!p) return;
+    if (p.activo === false || !p.stock) { showToast("Ese servicio no tiene cupos disponibles."); return; }
     const qtyInput = btn.closest("[data-add-scope]") && $("[data-qty] input", btn.closest("[data-add-scope]"));
     Cart.add(p.id, qtyInput ? qtyInput.value : 1);
     showToast(`${p.name} agregado al carrito`, "Ver carrito →", "carrito.html");
@@ -466,9 +508,12 @@
           <p class="pd-desc">${esc(p.long)}</p>
           <div class="pd-price">${old}<span class="now">${money(p.price)} <span class="unit">${esc(p.unit)}</span></span></div>
           <ul class="specs">${p.specs.map(s => `<li>${icon("check")}<span>${esc(s)}</span></li>`).join("")}</ul>
+          <div class="stock-line stock-line--lg"><span class="stock-dot ${availability(p).cls}"></span>${esc(availability(p).txt)}${p.activo !== false && p.stock ? ` · ${p.stock} cupos` : ""}</div>
           <div class="pd-actions">
-            ${qtyControl(1, p.id)}
-            <button class="btn btn--primary btn--lg" data-add="${p.id}">${icon("cart")} Agregar al carrito</button>
+            ${qtyControl(1, p.id, p.stock)}
+            ${availability(p).cls === "no"
+              ? `<button class="btn btn--ghost btn--lg" disabled>${icon("info")} Sin cupos disponibles</button>`
+              : `<button class="btn btn--primary btn--lg" data-add="${p.id}">${icon("cart")} Agregar al carrito</button>`}
             <a class="btn btn--ghost btn--lg" data-wa="Hola GamaSport, quiero reservar: ${p.name}">${icon("whatsapp")} Consultar</a>
           </div>
           <p class="hint" style="color:var(--muted);font-size:.85rem;margin-top:14px">${icon("shield")} Reserva protegida · Pago seguro con HTTPS · Cancelación flexible</p>
@@ -511,7 +556,7 @@
                   <div class="ci-price">${money(l.price)} ${esc(l.unit)}</div>
                 </div>
                 <div class="ci-end">
-                  ${qtyControl(l.qty, l.id)}
+                  ${qtyControl(l.qty, l.id, l.stock)}
                   <div class="ci-total">${money(l.lineTotal)}</div>
                   <button class="ci-remove" data-remove="${l.id}">${icon("trash")} Quitar</button>
                 </div>
@@ -988,6 +1033,8 @@
           <div class="stat"><div class="num">${orders.filter(o => o.estado === "pendiente").length}</div><div class="lbl">Pendientes</div></div>
           <div class="stat"><div class="num">${money(ingresos)}</div><div class="lbl">Ingresos registrados</div></div>
           <div class="stat"><div class="num">${bloqueos.length}</div><div class="lbl">Horarios bloqueados</div></div>
+          <div class="stat"><div class="num">${PRODUCTS.filter(p => p.activo !== false && p.stock).length}/${PRODUCTS.length}</div><div class="lbl">Servicios disponibles</div></div>
+          <div class="stat"><div class="num">${Auth.users().length}</div><div class="lbl">Usuarios registrados</div></div>
         </div>
 
         <h3 class="account-sub">Reservas</h3>
@@ -1005,6 +1052,33 @@
           </tr>`).join("")}</tbody></table></div>`
         : `<div class="empty-state">${icon("calendar")}<h3>Sin reservas todavía</h3><p>Cuando los clientes reserven, aparecerán aquí.</p></div>`}
 
+        <h3 class="account-sub">Productos y servicios (inventario)</h3>
+        <div class="orders-wrap"><table class="orders-table">
+          <thead><tr><th>Servicio</th><th>Categoría</th><th>Precio (L)</th><th>Cupos</th><th>Estado</th></tr></thead>
+          <tbody>${PRODUCTS.map(p => `<tr>
+            <td data-th="Servicio"><strong>${esc(p.name)}</strong><br><small>${esc(p.id)}</small></td>
+            <td data-th="Categoría">${esc(catName(p.cat))}</td>
+            <td data-th="Precio"><input class="inv-in" type="number" min="0" step="10" value="${p.price}" data-price="${p.id}"></td>
+            <td data-th="Cupos"><input class="inv-in" type="number" min="0" max="99" value="${p.stock}" data-stock="${p.id}"></td>
+            <td data-th="Estado"><label class="inv-check"><input type="checkbox" data-activo="${p.id}" ${p.activo === false ? "" : "checked"}> visible</label></td>
+          </tr>`).join("")}</tbody></table></div>
+        <p class="auth-note">Los cambios se guardan al salir del campo y se reflejan de inmediato en el catálogo.
+          <button class="btn btn--ghost btn--sm" id="invReset" style="margin-left:8px">Restaurar valores originales</button></p>
+
+        <h3 class="account-sub">Usuarios registrados</h3>
+        ${(function () {
+          const us = Auth.users();
+          if (!us.length) return `<div class="empty-state">${icon("user")}<h3>Todavía no hay usuarios</h3><p>Las cuentas creadas desde "Mi cuenta" aparecerán aquí.</p></div>`;
+          return `<div class="orders-wrap"><table class="orders-table">
+            <thead><tr><th>Nombre</th><th>Correo</th><th>Registro</th><th>Reservas</th></tr></thead>
+            <tbody>${us.map(u => `<tr>
+              <td data-th="Nombre">${esc(u.nombre)}</td>
+              <td data-th="Correo">${esc(u.email)}</td>
+              <td data-th="Registro">${new Date(u.creado).toLocaleDateString("es-HN")}</td>
+              <td data-th="Reservas">${Orders.byEmail(u.email).length}</td>
+            </tr>`).join("")}</tbody></table></div>`;
+        })()}
+
         <h3 class="account-sub">Bloquear horarios (mantenimiento, ligas, eventos)</h3>
         <form class="block-form" id="blockForm">
           <input type="date" name="fecha" required>
@@ -1020,6 +1094,23 @@
         showToast(`Pedido ${sel.dataset.order}: ${sel.value}.`);
         render();
       }));
+      // guardar precio, cupos y visibilidad del inventario
+      $$("[data-price]", root).forEach(inp => inp.addEventListener("change", () => {
+        const v = Math.max(0, parseInt(inp.value, 10) || 0);
+        Inventory.set(inp.dataset.price, { price: v });
+        showToast("Precio actualizado."); render();
+      }));
+      $$("[data-stock]", root).forEach(inp => inp.addEventListener("change", () => {
+        const v = Math.max(0, Math.min(99, parseInt(inp.value, 10) || 0));
+        Inventory.set(inp.dataset.stock, { stock: v });
+        showToast("Cupos actualizados."); render();
+      }));
+      $$("[data-activo]", root).forEach(chk => chk.addEventListener("change", () => {
+        Inventory.set(chk.dataset.activo, { activo: chk.checked });
+        showToast(chk.checked ? "Servicio visible en el catálogo." : "Servicio oculto del catálogo."); render();
+      }));
+      $("#invReset").addEventListener("click", () => { Inventory.reset(); showToast("Inventario restaurado."); render(); });
+
       $("#blockForm").addEventListener("submit", (e) => {
         e.preventDefault();
         const f = e.target.querySelector('[name="fecha"]').value;
@@ -1043,5 +1134,5 @@
        promos: initPromos, account: initAccount, admin: initAdmin }[page] || function(){})();
   });
 
-  window.GS = { Cart, money, showToast, Auth, Orders, Blocked, busySlots };
+  window.GS = { Cart, money, showToast, Auth, Orders, Blocked, busySlots, Inventory, availability };
 })();
