@@ -4,13 +4,12 @@
   "use strict";
 
   /* Datos generales (esto sale por todo el sitio: footer, contacto, etc.) */
-  // OJO: poner el WhatsApp y el teléfono de verdad antes de la defensa
   const CONFIG = {
     name: "GamaSport",
     slogan: "Tu pasión, nuestro campo",
-    phoneDisplay: "+504 9876-5432",
-    phone: "50498765432",
-    whatsapp: "50498765432",
+    phoneDisplay: "+504 9745-1385",
+    phone: "50497451385",
+    whatsapp: "50497451385",
     email: "reservas@gamasport.hn",
     address: "Anillo Periférico, frente al Coliseum Nacional de Ingenieros",
     city: "Tegucigalpa, Francisco Morazán, Honduras",
