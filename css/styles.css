@@ -653,7 +653,7 @@ p { color: var(--text-soft); }
 .bot-fab svg { width: 27px; height: 27px; }
 #gsBot.open .bot-fab { background: var(--green); color: #fff; }
 
-.bot-panel { position: fixed; right: 22px; bottom: 156px; z-index: 62; width: min(350px, calc(100vw - 44px)); background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); overflow: hidden; display: flex; flex-direction: column; max-height: min(560px, calc(100vh - 200px)); animation: botIn .22s var(--ease); }
+.bot-panel { position: fixed; right: 22px; bottom: 156px; z-index: 62; width: min(350px, calc(100vw - 44px)); background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); overflow: hidden; display: flex; flex-direction: column; max-height: min(460px, calc(100vh - 250px)); animation: botIn .22s var(--ease); }
 .bot-panel[hidden] { display: none; }
 @keyframes botIn { from { opacity: 0; transform: translateY(14px); } }
 
