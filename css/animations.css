@@ -130,12 +130,6 @@ html { scrollbar-color: var(--green) #0e2630; }
 .cart-badge.is-pulsing { animation: badgePop .45s var(--ease); }
 @keyframes badgePop { 0% { transform: scale(1); } 35% { transform: scale(1.5) rotate(-8deg); } 100% { transform: scale(1); } }
 
-/* la malla animada del encabezado interno */
-.page-hero::before {
-  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: .5;
-  background: radial-gradient(420px 280px at var(--mx) var(--my), rgba(34,197,94,.22), transparent 70%);
-  transition: background .12s linear;
-}
 .page-hero > .container { position: relative; z-index: 1; }
 
 /* ajustes para celular y para que no pese tanto */

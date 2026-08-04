@@ -433,7 +433,7 @@ p { color: var(--text-soft); }
 
 /* el encabezado de las páginas internas */
 .page-hero { background: linear-gradient(160deg, #0a1c24, #0f2a35); color: #fff; padding: 54px 0; position: relative; overflow: hidden; }
-.page-hero::after { content: ""; position: absolute; inset: 0; opacity: .1; background-image: linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px); background-size: 46px 46px; mask-image: radial-gradient(circle at 80% 30%, #000, transparent 75%); }
+.page-hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(680px 320px at 78% 20%, rgba(34,197,94,.13), transparent 72%); }
 .page-hero h1 { color: #fff; position: relative; }
 .page-hero p { color: #b6cabf; position: relative; margin-top: 10px; max-width: 620px; }
 .page-hero .breadcrumb { position: relative; margin-bottom: 14px; }
