@@ -931,13 +931,13 @@
             <button class="btn btn--primary btn--block">${icon("plus")} Crear mi cuenta</button>
           </form>
           <form class="auth-form" id="resetForm" data-view="reset" hidden>
-            <p class="auth-note">Escribe tu correo y una contraseña nueva. En un sistema real este paso enviaría un enlace de verificación a tu correo.</p>
+            <p class="auth-note">Por seguridad, confirma tu correo y define una contraseña nueva.</p>
             <div class="field"><label>Correo electrónico</label><input name="email" type="email" required></div>
             <div class="field"><label>Contraseña nueva</label><input name="pass" type="password" required></div>
             <button class="btn btn--primary btn--block">Restablecer</button>
           </form>
           <p class="auth-msg" id="authMsg" role="alert"></p>
-          <p class="auth-note">Las cuentas de esta demo se guardan en tu navegador. El plan de la Fase 2 contempla migrarlas a Firebase Authentication.</p>
+          <p class="auth-note">Con tu cuenta reservas más rápido y llevas el control de tus partidos.</p>
         </div>`;
       const msg = $("#authMsg");
       $$(".auth-tabs button", root).forEach(b => b.addEventListener("click", () => {
@@ -980,7 +980,7 @@
       </div>
       <h3 id="reservas" class="account-sub">Mis reservas</h3>
       ${ordersTable(mine)}
-      <p class="auth-note" style="margin-top:14px">${icon("info")} Aquí se listan las reservas hechas con tu correo en este navegador.</p>`;
+      <p class="auth-note" style="margin-top:14px">${icon("info")} Aquí aparecen las reservas hechas con tu correo.</p>`;
     $("#logoutBtn").addEventListener("click", () => { Auth.logout(); location.reload(); });
     hydrate(root);
   }
