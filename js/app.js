@@ -255,6 +255,190 @@
     });
   }
 
+  /* ============ Asistente de preguntas frecuentes ============
+     No es inteligencia artificial: es una lista de preguntas con sus respuestas.
+     Lo que escribe el visitante se compara con unas palabras clave y gana la
+     respuesta que coincida en más. Si ninguna coincide, lo mando a WhatsApp. */
+  function initAsistente() {
+    // en el panel del administrador no pinta nada: es una ayuda para el cliente
+    if ($("#gsBot") || document.body.dataset.page === "admin") return;
+
+    const sinTildes = (s) => String(s).toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9\s]/g, " ");
+
+    const enlace = (href, txt) => `<a href="${href}">${txt}</a>`;
+
+    const FAQ = [
+      { p: "¿Cuánto cuesta la cancha?",
+        claves: "precio precios cuanto cuesta vale valor tarifa costo cobran caro barato",
+        r: `La cancha diurna (3:00 a 6:00 PM) cuesta <b>${money(800)} la hora</b> y la nocturna
+            (6:00 a 9:00 PM) <b>${money(1000)} la hora</b>. Los torneos, el restaurante y las
+            membresías tienen su propio precio. A todo se le suma el ISV del 15 %.
+            ${enlace("catalogo.html", "Ver todos los precios")}` },
+
+      { p: "¿Cómo reservo?",
+        claves: "reservar reserva reservo apartar agendar separar proceso pasos",
+        r: `En cuatro pasos: elige el servicio en el catálogo, agrégalo al carrito, escoge fecha y
+            hora (las horas ya ocupadas aparecen deshabilitadas) y confirma con tus datos.
+            Al final recibes tu número de reserva. ${enlace("catalogo.html", "Empezar ahora")}` },
+
+      { p: "¿Cuál es el horario?",
+        claves: "horario horarios hora abren cierran abierto cierre atienden dias domingo tarde noche",
+        r: `Atendemos <b>${CONFIG.hours}</b>. Las canchas se alquilan por hora dentro de ese horario:
+            de 3:00 a 6:00 PM es tarifa diurna y de 6:00 a 9:00 PM nocturna.` },
+
+      { p: "¿Dónde están ubicados?",
+        claves: "donde ubicacion ubicados direccion llegar llego llegamos quedan lugar mapa zona sucursal",
+        r: `Estamos en ${CONFIG.address}, ${CONFIG.city}.
+            ${enlace(CONFIG.mapsUrl, "Abrir en Google Maps")}` },
+
+      { p: "¿Tienen promociones?",
+        claves: "promocion promociones cupon cupones descuento descuentos oferta ofertas codigo rebaja",
+        r: `Sí: <b>GAMA10</b> (10 %), <b>EQUIPO15</b> (15 %) y <b>SEMANA15</b> (15 %). El código se
+            escribe en el carrito, antes de pagar. ${enlace("promociones.html", "Ver promociones")}` },
+
+      { p: "¿Cómo puedo pagar?",
+        claves: "pago pagar pagos tarjeta paypal efectivo tigo money transferencia deposito",
+        r: `Puedes pagar con tarjeta de crédito o débito, PayPal, Tigo Money, o en efectivo al llegar
+            a la cancha. El pago en línea viaja cifrado con HTTPS.` },
+
+      { p: "¿Puedo cancelar mi reserva?",
+        claves: "cancelar cancelacion cancelo reembolso devolucion reprogramar cambiar fecha mover",
+        r: `Si cancelas con <b>más de 24 horas</b> de anticipación, te devolvemos el total o
+            reprogramamos sin costo. ${enlace("terminos.html#cancelaciones", "Ver la política completa")}` },
+
+      { p: "¿Organizan torneos?",
+        claves: "torneo torneos liga ligas evento eventos campeonato relampago equipos inscripcion",
+        r: `Sí. Organizamos torneos relámpago y ligas. La inscripción es por equipo e incluye tres
+            partidos garantizados. ${enlace("catalogo.html?cat=torneos", "Ver torneos y eventos")}` },
+
+      { p: "¿Tienen restaurante?",
+        claves: "restaurante comida comer boquitas bebidas hamburguesa nachos cerveza tercer tiempo",
+        r: `Sí, el restaurante está en el mismo centro. Puedes agregar boquitas y bebidas a tu reserva
+            para tenerlas listas al terminar el partido.
+            ${enlace("catalogo.html?cat=restaurante", "Ver el menú")}` },
+
+      { p: "¿Dónde veo mis reservas?",
+        claves: "mis reservas historial cuenta perfil pedido pedidos sesion entrar registrarme",
+        r: `En <b>Mi cuenta</b>, con el mismo correo que usaste al reservar. Ahí aparece el historial
+            con el estado de cada reserva. ${enlace("cuenta.html", "Ir a Mi cuenta")}` },
+
+      { p: "¿Hay membresías?",
+        claves: "membresia membresias mensualidad plan planes socio suscripcion equipo fijo",
+        r: `Sí, hay planes para equipos que juegan seguido, con horario preferente y descuento.
+            ${enlace("catalogo.html?cat=extras", "Ver membresías y extras")}` },
+
+      { p: "¿Hay parqueo?",
+        claves: "parqueo estacionamiento carro vehiculo seguro dejar",
+        r: `Sí, el parqueo privado está incluido y no tiene costo adicional.` },
+
+      { p: "¿Cuántos jugadores caben?",
+        claves: "jugadores cuantos personas capacidad caben equipo grama cancha tamano",
+        r: `Es una cancha de fútbol 5 con grama sintética, pensada para <b>10 a 12 jugadores</b>.
+            Tenemos dos canchas disponibles.` },
+
+      { p: "Quiero hablar con alguien",
+        claves: "hablar persona humano asesor alguien atencion telefono llamar whatsapp contacto ayuda",
+        r: `Con gusto. Escríbenos por WhatsApp al <b>${CONFIG.phoneDisplay}</b> y te responde alguien
+            del equipo. ${enlace(waLink("¡Hola GamaSport! Tengo una consulta."), "Abrir WhatsApp")}` }
+    ];
+
+    const NO_ENTENDI = `Esa no la tengo respondida todavía. Escríbenos por WhatsApp y te contesta
+      alguien del equipo: ${enlace(waLink("¡Hola GamaSport! Tengo una consulta."), "abrir WhatsApp")},
+      o déjanos tu mensaje en ${enlace("contacto.html", "la página de contacto")}.`;
+
+    /* Gana la pregunta que comparta más palabras con lo que escribieron. Las palabras
+       largas pesan más que las cortas, porque "cancelar" dice mucho más que "como";
+       si no, en "quiero cancelar mi reserva" ganaba la respuesta de cómo reservar. */
+    function buscar(texto) {
+      const palabras = sinTildes(texto).split(/\s+/).filter(w => w.length > 2);
+      if (!palabras.length) return null;
+      let mejor = null, top = 0;
+      FAQ.forEach(f => {
+        const claves = f.claves.split(" ");
+        const puntos = palabras.reduce((n, w) => {
+          const c = claves.find(k => k.startsWith(w) || w.startsWith(k));
+          return n + (c ? Math.max(w.length, c.length) + (c === w ? 2 : 0) : 0);
+        }, 0);
+        if (puntos > top) { top = puntos; mejor = f; }
+      });
+      return top ? mejor : null;
+    }
+
+    const burbuja = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-3.8-.8L3 21l1.9-5A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/>
+      </svg>`;
+
+    const wrap = document.createElement("div");
+    wrap.id = "gsBot";
+    wrap.innerHTML = `
+      <button class="bot-fab" id="botFab" aria-expanded="false" aria-controls="botPanel"
+        aria-label="Abrir el asistente de preguntas frecuentes">${burbuja}</button>
+      <section class="bot-panel" id="botPanel" role="dialog" aria-label="Asistente GamaSport" hidden>
+        <header class="bot-head">
+          <div><strong>Asistente GamaSport</strong><span>Preguntas frecuentes</span></div>
+          <button class="bot-x" id="botClose" aria-label="Cerrar el asistente">&times;</button>
+        </header>
+        <div class="bot-body" id="botBody" aria-live="polite"></div>
+        <div class="bot-chips" id="botChips"></div>
+        <form class="bot-form" id="botForm">
+          <input id="botInput" type="text" autocomplete="off" placeholder="Escribe tu pregunta...">
+          <button class="btn btn--primary btn--sm" type="submit">Enviar</button>
+        </form>
+      </section>`;
+    document.body.appendChild(wrap);
+
+    const panel = $("#botPanel"), body = $("#botBody"), chips = $("#botChips"), fab = $("#botFab");
+
+    function decir(texto, quien) {
+      const b = document.createElement("div");
+      b.className = "bot-msg " + (quien === "yo" ? "mine" : "bot");
+      b.innerHTML = texto;
+      body.appendChild(b);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    function pintarChips() {
+      chips.innerHTML = FAQ.slice(0, 6)
+        .map((f, i) => `<button type="button" data-faq="${i}">${esc(f.p)}</button>`).join("");
+    }
+
+    function responder(f, pregunta) {
+      decir(esc(pregunta), "yo");
+      setTimeout(() => decir(f ? f.r : NO_ENTENDI, "bot"), 260);
+    }
+
+    decir(`¡Hola! Puedo ayudarte con precios, horarios, reservas y promociones.
+      Elige una pregunta o escríbeme la tuya.`, "bot");
+    pintarChips();
+
+    function abrir(si) {
+      panel.hidden = !si;
+      fab.setAttribute("aria-expanded", si ? "true" : "false");
+      wrap.classList.toggle("open", si);
+      if (si) setTimeout(() => $("#botInput").focus(), 80);
+    }
+    fab.addEventListener("click", () => abrir(panel.hidden));
+    $("#botClose").addEventListener("click", () => { abrir(false); fab.focus(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !panel.hidden) abrir(false); });
+
+    chips.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-faq]");
+      if (!b) return;
+      const f = FAQ[+b.dataset.faq];
+      responder(f, f.p);
+    });
+
+    $("#botForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const inp = $("#botInput"), txt = inp.value.trim();
+      if (!txt) return;
+      inp.value = "";
+      responder(buscar(txt), txt);
+    });
+  }
+
   function initLayout() {
     applyInventory();
     hydrate(document);
@@ -277,6 +461,7 @@
     syncBadges(false);
     document.addEventListener("cart:change", () => syncBadges(true));
     revealOnScroll();
+    initAsistente();
   }
 
   function revealOnScroll() {

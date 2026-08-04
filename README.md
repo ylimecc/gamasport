@@ -14,6 +14,7 @@ Tienda y reservas en línea para **GamaSport**, centro de canchas de fútbol 5 e
 - 🎟️ **Promociones**: cupones de descuento que se aplican en el carrito
 - 👤 **Cuentas de usuario**: registro, inicio de sesión e historial de reservas
 - 🛠️ **Panel administrativo**: pedidos, precios, cupos y horarios bloqueados
+- 💬 **Asistente de preguntas frecuentes**: responde dudas comunes sin salir de la página
 
 ## Páginas
 
