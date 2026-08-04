@@ -14,6 +14,9 @@
 
   const COUPONS = { "GAMA10": 0.10, "EQUIPO15": 0.15, "SEMANA15": 0.15 };
 
+  // sube a la nube lo que acabo de guardar; si no hay nube configurada, no hace nada
+  function nube(col) { if (window.GS_CLOUD && window.GS_CLOUD.activo) window.GS_CLOUD.subir(col); }
+
   function waLink(msg) {
     const text = encodeURIComponent(msg || `¡Hola ${CONFIG.name}! Quisiera información para reservar.`);
     return `https://wa.me/${CONFIG.whatsapp}?text=${text}`;
@@ -82,7 +85,7 @@
     // codificación simple para no guardar la clave tal cual (es una demo, no producción)
     code(s) { let h = 7; for (let i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) >>> 0; } return "u" + h.toString(16); },
     users() { try { return JSON.parse(localStorage.getItem(this.UKEY)) || []; } catch (e) { return []; } },
-    saveUsers(list) { localStorage.setItem(this.UKEY, JSON.stringify(list)); },
+    saveUsers(list) { localStorage.setItem(this.UKEY, JSON.stringify(list)); nube("users"); },
     find(email) { return this.users().find(u => u.email === (email || "").trim().toLowerCase()) || null; },
     register(nombre, email, pass) {
       email = (email || "").trim().toLowerCase();
@@ -120,10 +123,11 @@
   const Orders = {
     KEY: "gs_orders_v1",
     all() { try { return JSON.parse(localStorage.getItem(this.KEY)) || []; } catch (e) { return []; } },
-    add(order) { const l = this.all(); l.unshift(order); localStorage.setItem(this.KEY, JSON.stringify(l)); },
+    add(order) { const l = this.all(); l.unshift(order); localStorage.setItem(this.KEY, JSON.stringify(l)); nube("orders"); },
     setStatus(number, estado) {
       const l = this.all().map(o => o.number === number ? { ...o, estado } : o);
       localStorage.setItem(this.KEY, JSON.stringify(l));
+      nube("orders");
     },
     byEmail(email) { return this.all().filter(o => o.customer && o.customer.email === email); }
   };
@@ -138,9 +142,9 @@
       const o = this.all();
       o[id] = Object.assign({}, o[id] || {}, patch);
       localStorage.setItem(this.KEY, JSON.stringify(o));
-      applyInventory();
+      applyInventory(); nube("inventory");
     },
-    reset() { localStorage.removeItem(this.KEY); applyInventory(); }
+    reset() { localStorage.removeItem(this.KEY); applyInventory(); nube("inventory"); }
   };
 
   function applyInventory() {
@@ -166,8 +170,8 @@
   const Blocked = {
     KEY: "gs_blocked_v1",
     all() { try { return JSON.parse(localStorage.getItem(this.KEY)) || []; } catch (e) { return []; } },
-    add(fecha, hora) { const l = this.all(); if (!l.find(b => b.fecha === fecha && b.hora === hora)) { l.push({ fecha, hora }); localStorage.setItem(this.KEY, JSON.stringify(l)); } },
-    remove(fecha, hora) { localStorage.setItem(this.KEY, JSON.stringify(this.all().filter(b => !(b.fecha === fecha && b.hora === hora)))); }
+    add(fecha, hora) { const l = this.all(); if (!l.find(b => b.fecha === fecha && b.hora === hora)) { l.push({ fecha, hora }); localStorage.setItem(this.KEY, JSON.stringify(l)); nube("blocked"); } },
+    remove(fecha, hora) { localStorage.setItem(this.KEY, JSON.stringify(this.all().filter(b => !(b.fecha === fecha && b.hora === hora)))); nube("blocked"); }
   };
 
   // horas que ya no se pueden reservar en una fecha (reservas hechas aquí + bloqueos del admin)
@@ -1126,13 +1130,18 @@
   }
 
   /* miro qué página es y llamo a la función que le toca */
-  document.addEventListener("DOMContentLoaded", () => {
+  async function arrancar() {
+    // si hay nube, intento traer los datos antes de dibujar; si falla, sigo con lo local
+    if (window.GS_CLOUD && window.GS_CLOUD.activo) {
+      try { await window.GS_CLOUD.bajar(); } catch (e) { /* seguimos con los datos del navegador */ }
+    }
     initLayout();
     const page = document.body.dataset.page;
     ({ home: initHome, catalog: initCatalog, product: initProduct, cart: initCart,
        checkout: initCheckout, confirm: initConfirm, contact: initContact,
        promos: initPromos, account: initAccount, admin: initAdmin }[page] || function(){})();
-  });
+  }
+  document.addEventListener("DOMContentLoaded", arrancar);
 
   window.GS = { Cart, money, showToast, Auth, Orders, Blocked, busySlots, Inventory, availability };
 })();
