@@ -34,18 +34,25 @@
     KEY: "gs_cart_v1",
     get() { try { return JSON.parse(localStorage.getItem(this.KEY)) || []; } catch (e) { return []; } },
     save(items) { localStorage.setItem(this.KEY, JSON.stringify(items)); document.dispatchEvent(new Event("cart:change")); },
+    // nunca dejo pasar de los cupos que tiene el servicio
+    tope(id) {
+      const p = getProduct(id);
+      const cupos = p && p.stock != null ? p.stock : 50;
+      return Math.max(1, Math.min(50, cupos));
+    },
     add(id, qty) {
       qty = Math.max(1, parseInt(qty || 1, 10));
       const items = this.get();
       const row = items.find(i => i.id === id);
-      if (row) row.qty += qty; else items.push({ id, qty });
+      const tope = this.tope(id);
+      if (row) row.qty = Math.min(tope, row.qty + qty); else items.push({ id, qty: Math.min(tope, qty) });
       this.save(items);
     },
     setQty(id, qty) {
       qty = parseInt(qty, 10);
       let items = this.get();
       if (!qty || qty < 1) items = items.filter(i => i.id !== id);
-      else { const row = items.find(i => i.id === id); if (row) row.qty = qty; }
+      else { const row = items.find(i => i.id === id); if (row) row.qty = Math.min(this.tope(id), qty); }
       this.save(items);
     },
     remove(id) { this.save(this.get().filter(i => i.id !== id)); },
@@ -357,6 +364,8 @@
     const p = getProduct(btn.dataset.add);
     if (!p) return;
     if (p.activo === false || !p.stock) { showToast("Ese servicio no tiene cupos disponibles."); return; }
+    const yaEnCarrito = (Cart.get().find(i => i.id === p.id) || {}).qty || 0;
+    if (yaEnCarrito >= Cart.tope(p.id)) { showToast(`Solo quedan ${p.stock} cupos de este servicio.`); return; }
     const qtyInput = btn.closest("[data-add-scope]") && $("[data-qty] input", btn.closest("[data-add-scope]"));
     Cart.add(p.id, qtyInput ? qtyInput.value : 1);
     showToast(`${p.name} agregado al carrito`, "Ver carrito →", "carrito.html");
@@ -637,10 +646,10 @@
             <legend><span class="step-num">2</span> Detalles de la reserva</legend>
             <div class="form-grid">
               <div class="field"><label>Fecha de la reserva <span class="req">*</span></label>
-                <input name="fecha" type="date" required min="${minDate}"><span class="error-msg">Selecciona una fecha válida.</span></div>
+                <input name="fecha" type="date" required min="${minDate}"><span class="error-msg">Elige una fecha de hoy en adelante.</span></div>
               <div class="field"><label>Hora preferida <span class="req">*</span></label>
                 <select name="hora" required><option value="">Selecciona…</option>${slots.map(s=>`<option>${s}</option>`).join("")}</select>
-                <span class="error-msg">Selecciona una hora.</span></div>
+                <span class="error-msg">Elige una hora libre.</span></div>
               <div class="field col-2"><label>Notas para el equipo (opcional)</label>
                 <textarea name="notas" rows="2" placeholder="Ej. somos 12 jugadores, necesitamos petos"></textarea></div>
             </div>
@@ -758,8 +767,11 @@
       setErr("nombre", val("nombre").length < 3);
       setErr("email", !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val("email")));
       setErr("telefono", val("telefono").replace(/\D/g, "").length < 8);
-      setErr("fecha", !val("fecha"));
-      setErr("hora", !val("hora"));
+      // la fecha debe existir y no puede ser de un día que ya pasó
+      setErr("fecha", !val("fecha") || val("fecha") < minDate);
+      // y la hora elegida no puede estar ya ocupada
+      const horaTomada = val("fecha") && busySlots(val("fecha")).includes(val("hora"));
+      setErr("hora", !val("hora") || horaTomada);
       const pago = form.querySelector('input[name="pago"]:checked').value;
       if (pago === "Tarjeta (sandbox)") {
         setErr("card", val("card").replace(/\s/g, "").length < 13);
