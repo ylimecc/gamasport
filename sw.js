@@ -1,5 +1,9 @@
-/* Página de Benny: sin conexión, cualquier navegación muestra el 404 cacheado */
-const CACHE = "benny-offline-v1";
+/* Modo sin conexión de GamaSport.
+
+   Guarda la página 404, que se basta sola (lleva sus estilos dentro), y la
+   muestra cuando alguien navega sin internet. Así el visitante ve la marca y
+   los enlaces para volver, en vez del error del navegador. */
+const CACHE   = "gamasport-offline-v2";
 const OFFLINE = new URL("404.html", self.location).pathname;
 
 self.addEventListener("install", e => {
@@ -10,8 +14,14 @@ self.addEventListener("install", e => {
   );
 });
 
+/* Al activarse borra las versiones anteriores del caché: sin esto, quien ya
+   visitó el sitio seguiría viendo la página guardada de la versión vieja. */
 self.addEventListener("activate", e => {
-  e.waitUntil(self.clients.claim());
+  e.waitUntil(
+    caches.keys()
+      .then(claves => Promise.all(claves.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener("fetch", e => {
