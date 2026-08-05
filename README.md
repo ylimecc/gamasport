@@ -4,6 +4,10 @@ Tienda y reservas en línea para **GamaSport**, centro de canchas de fútbol 5 e
 
 **🌐 Sitio en vivo: [ylimecc.github.io/gamasport](https://ylimecc.github.io/gamasport/)**
 
+**📄 Documentación del proyecto: [GamaSport-Documentacion.pdf](docs/GamaSport-Documentacion.pdf)**
+Cómo se construyó la plataforma, herramientas, arquitectura, seguridad, normativa de comercio
+electrónico aplicada y guion para la exposición.
+
 ## Qué ofrece
 
 - 📅 **Reserva de canchas**: flujo de reserva en 4 pasos, directo desde el navegador

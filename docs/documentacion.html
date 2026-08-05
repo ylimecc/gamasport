@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>GamaSport · Documentación del proyecto</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 16mm 16mm; }
+
+  :root {
+    --ink: #0a1c24;
+    --ink-2: #14323d;
+    --green: #16a34a;
+    --green-dark: #0f7a37;
+    --lime: #7cb518;
+    --text: #1f2b30;
+    --soft: #55656c;
+    --line: #dde5e0;
+    --bg-soft: #f4f8f5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--text);
+  }
+
+  /* ---------- portada ---------- */
+  .portada {
+    height: 252mm;
+    background: var(--ink);
+    color: #fff;
+    padding: 30mm 18mm;
+    position: relative;
+    page-break-after: always;
+  }
+  .portada .marca { display: flex; align-items: center; margin-bottom: 60mm; }
+  .portada .marca-txt { font-size: 22pt; font-weight: 800; margin-left: 5mm; letter-spacing: -.5pt; }
+  .portada .marca-txt span { color: #a3e635; }
+  .portada h1 { font-size: 34pt; line-height: 1.12; letter-spacing: -1pt; margin-bottom: 6mm; }
+  .portada h1 em { color: #a3e635; font-style: normal; }
+  .portada .sub { font-size: 13pt; color: #b9ccc3; max-width: 130mm; }
+  .portada .pie {
+    position: absolute; left: 18mm; right: 18mm; bottom: 22mm;
+    border-top: 1px solid rgba(255,255,255,.18); padding-top: 6mm;
+    font-size: 10pt; color: #9db3aa; display: flex; justify-content: space-between;
+  }
+  .portada .pie b { color: #fff; font-weight: 600; }
+
+  /* ---------- estructura ---------- */
+  h2 {
+    font-size: 15pt; color: var(--ink); letter-spacing: -.3pt;
+    margin: 9mm 0 3mm; padding-bottom: 2mm; border-bottom: 2px solid var(--green);
+    page-break-after: avoid;
+  }
+  h2:first-of-type { margin-top: 0; }
+  h3 { font-size: 11.5pt; color: var(--ink-2); margin: 5mm 0 2mm; page-break-after: avoid; }
+  h4 { font-size: 10.5pt; color: var(--ink-2); margin: 4mm 0 1.5mm; page-break-after: avoid; }
+  p { margin-bottom: 2.6mm; text-align: justify; }
+  ul, ol { margin: 0 0 3mm 5mm; }
+  li { margin-bottom: 1.4mm; }
+  code {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 9pt; background: var(--bg-soft); padding: .4mm 1.2mm;
+    border-radius: 2px; color: var(--green-dark);
+  }
+  strong { color: var(--ink); }
+  .nueva-pagina { page-break-before: always; }
+
+  table { width: 100%; border-collapse: collapse; margin: 3mm 0 4mm; font-size: 9.5pt; page-break-inside: avoid; }
+  th {
+    background: var(--ink); color: #fff; text-align: left; padding: 2mm 2.5mm;
+    font-size: 9pt; letter-spacing: .3pt; text-transform: uppercase;
+  }
+  td { padding: 2mm 2.5mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:nth-child(even) td { background: #fafcfb; }
+
+  .caja {
+    background: var(--bg-soft); border-left: 3px solid var(--green);
+    padding: 3mm 4mm; margin: 3mm 0 4mm; page-break-inside: avoid;
+  }
+  .caja h4 { margin-top: 0; }
+  .caja p:last-child { margin-bottom: 0; }
+  .aviso { border-left-color: #d97706; background: #fffbeb; }
+  .ojo { border-left-color: #dc2626; background: #fef2f2; }
+
+  .indice { columns: 2; column-gap: 10mm; font-size: 10pt; }
+  .indice a { color: var(--text); text-decoration: none; display: block; margin-bottom: 1.8mm; }
+  .indice .n { color: var(--green-dark); font-weight: 700; margin-right: 2mm; }
+
+  .flujo { margin: 3mm 0 4mm; }
+  .paso { display: flex; margin-bottom: 3mm; page-break-inside: avoid; }
+  .paso .num {
+    flex: none; width: 8mm; height: 8mm; border-radius: 50%;
+    background: var(--green); color: #fff; font-weight: 700; font-size: 10pt;
+    text-align: center; line-height: 8mm; margin-right: 3.5mm;
+  }
+  .paso .txt { flex: 1; }
+  .paso .txt b { display: block; color: var(--ink); }
+
+  .dos { display: flex; gap: 6mm; }
+  .dos > div { flex: 1; }
+
+  .esquema {
+    background: var(--ink); color: #cfe0d8; padding: 5mm; border-radius: 3mm;
+    font-family: Consolas, "Courier New", monospace; font-size: 8.5pt; line-height: 1.5;
+    white-space: pre; margin: 3mm 0 4mm; page-break-inside: avoid;
+  }
+  .esquema b { color: #a3e635; font-weight: 400; }
+</style>
+</head>
+<body>
+
+<!-- ===================== PORTADA ===================== -->
+<section class="portada">
+  <div class="marca">
+    <svg width="52" height="52" viewBox="0 0 48 48">
+      <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#22c55e"/><stop offset="1" stop-color="#0f7a37"/></linearGradient></defs>
+      <rect x="2" y="2" width="44" height="44" rx="13" fill="url(#lg)"/>
+      <circle cx="24" cy="24" r="13" fill="#0a1c24"/>
+      <path d="M24 14.5 30 19l-2.3 7h-7.4L18 19z" fill="#fff"/>
+      <path d="M24 11.5v3M14 18l4 1M14.5 30l3.5-3.5M33.5 30 30 26.5M34 18l-4 1" stroke="#a3e635" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+    </svg>
+    <div class="marca-txt">Gama<span>Sport</span></div>
+  </div>
+
+  <h1>Cómo se construyó<br><em>la plataforma</em></h1>
+  <p class="sub">
+    Documentación completa del sitio de reservas y tienda en línea de GamaSport:
+    herramientas, arquitectura, funcionamiento, seguridad y cumplimiento legal.
+    Pensada para explicar el proyecto en la exposición.
+  </p>
+
+  <div class="pie">
+    <div><b>Proyecto académico</b><br>DIA-309 Negocios Electrónicos · UNAH · II PAC 2026</div>
+    <div style="text-align:right"><b>Sitio en línea</b><br>ylimecc.github.io/gamasport</div>
+  </div>
+</section>
+
+<!-- ===================== ÍNDICE ===================== -->
+<h2>Contenido</h2>
+<div class="indice">
+  <a><span class="n">1</span>El negocio y qué resuelve el sitio</a>
+  <a><span class="n">2</span>Herramientas utilizadas y por qué</a>
+  <a><span class="n">3</span>Cómo está organizado el proyecto</a>
+  <a><span class="n">4</span>Arquitectura: qué pasa cuando alguien entra</a>
+  <a><span class="n">5</span>Recorrido por las páginas</a>
+  <a><span class="n">6</span>El catálogo y el carrito</a>
+  <a><span class="n">7</span>El flujo de reserva, paso a paso</a>
+  <a><span class="n">8</span>Cómo se evita que dos personas reserven la misma hora</a>
+  <a><span class="n">9</span>Cuentas de usuario y seguridad</a>
+  <a><span class="n">10</span>El panel administrativo</a>
+  <a><span class="n">11</span>El asistente de preguntas frecuentes</a>
+  <a><span class="n">12</span>Normativa de comercio electrónico y cómo se aplica</a>
+  <a><span class="n">13</span>Publicación en internet y funcionamiento sin conexión</a>
+  <a><span class="n">14</span>Posicionamiento y presencia en redes</a>
+  <a><span class="n">15</span>Pruebas realizadas</a>
+  <a><span class="n">16</span>Qué quedó fuera y por qué</a>
+  <a><span class="n">17</span>Guion sugerido para el video</a>
+  <a><span class="n">18</span>Glosario</a>
+</div>
+
+<!-- ===================== 1 ===================== -->
+<h2>1. El negocio y qué resuelve el sitio</h2>
+<p>
+  GamaSport es un centro deportivo de fútbol 5 en Tegucigalpa: dos canchas de grama sintética con
+  iluminación nocturna, parqueo privado y restaurante en el mismo lugar. Atiende de lunes a domingo,
+  de 3:00 a 9:00 de la tarde.
+</p>
+<p>
+  Antes de la plataforma, reservar dependía de una llamada o un mensaje de WhatsApp, con tres
+  problemas conocidos: el cliente no sabía qué horas estaban libres sin preguntar, dos personas podían
+  pedir la misma hora, y el control de reservas vivía en la memoria de quien contestaba el teléfono.
+</p>
+<p>
+  El sitio resuelve eso con tres piezas: un <strong>catálogo</strong> con los servicios y sus precios,
+  un <strong>flujo de reserva</strong> que muestra en tiempo real qué horas quedan libres, y un
+  <strong>panel administrativo</strong> donde el personal ve todas las reservas, cambia su estado y
+  bloquea horarios.
+</p>
+
+<h3>Qué se puede hacer en el sitio</h3>
+<table>
+  <tr><th style="width:38%">Función</th><th>Para qué sirve</th></tr>
+  <tr><td>Reserva de canchas</td><td>Alquilar una hora de cancha, diurna o nocturna, eligiendo fecha y hora entre las disponibles.</td></tr>
+  <tr><td>Torneos y eventos</td><td>Inscribir un equipo a un torneo relámpago, organizar un evento privado o un cumpleaños deportivo.</td></tr>
+  <tr><td>Restaurante</td><td>Agregar combos, boquitas o bebidas a la reserva para tenerlos listos al terminar el partido.</td></tr>
+  <tr><td>Membresías y extras</td><td>Plan mensual para equipos que juegan seguido, y alquiler de balón y petos.</td></tr>
+  <tr><td>Cupones de descuento</td><td>Tres códigos vigentes que el cliente escribe en el carrito antes de pagar.</td></tr>
+  <tr><td>Cuenta de cliente</td><td>Registro, inicio de sesión e historial de reservas propias.</td></tr>
+  <tr><td>Panel del personal</td><td>Reservas, estados, precios, cupos, usuarios y bloqueo de horarios.</td></tr>
+  <tr><td>Asistente de dudas</td><td>Responde las preguntas más frecuentes sin salir de la página.</td></tr>
+</table>
+
+<!-- ===================== 2 ===================== -->
+<h2>2. Herramientas utilizadas y por qué</h2>
+<p>
+  La decisión de fondo fue construir el sitio con las tecnologías base de la web, sin frameworks ni
+  herramientas de compilación. En un proyecto de este tamaño eso significa menos piezas que puedan
+  fallar, carga más rápida y un código que cualquiera del equipo puede leer y modificar.
+</p>
+
+<table>
+  <tr><th style="width:26%">Herramienta</th><th style="width:30%">Para qué se usó</th><th>Por qué esa y no otra</th></tr>
+  <tr>
+    <td><strong>HTML5</strong></td>
+    <td>La estructura de las catorce páginas.</td>
+    <td>Es el estándar de la web. Se usaron etiquetas con significado (header, nav, main, section, footer) para que buscadores y lectores de pantalla entiendan el contenido.</td>
+  </tr>
+  <tr>
+    <td><strong>CSS3</strong></td>
+    <td>Todo el diseño, el color, la tipografía y la adaptación a celular.</td>
+    <td>Con variables de color y Grid y Flexbox se logra un diseño adaptable sin ninguna librería externa como Bootstrap.</td>
+  </tr>
+  <tr>
+    <td><strong>JavaScript</strong></td>
+    <td>Carrito, cuentas, reservas, panel e interacción.</td>
+    <td>Se ejecuta en el navegador del cliente, sin servidor propio. Sin frameworks: el sitio no necesita compilarse ni instalarse.</td>
+  </tr>
+  <tr>
+    <td><strong>Firebase Authentication</strong></td>
+    <td>Registro e inicio de sesión de los clientes y del personal.</td>
+    <td>Google se encarga de guardar y verificar las contraseñas, de cifrarlas y de enviar los correos de recuperación. Escribir eso a mano es donde más fallan los proyectos.</td>
+  </tr>
+  <tr>
+    <td><strong>Firebase Firestore</strong></td>
+    <td>Base de datos de reservas, perfiles, horarios y precios.</td>
+    <td>Es una base de datos en la nube a la que el navegador puede hablar directamente, con reglas de seguridad propias. Evita tener que programar y pagar un servidor.</td>
+  </tr>
+  <tr>
+    <td><strong>GitHub</strong></td>
+    <td>Guardar el código y su historial de cambios.</td>
+    <td>Cada cambio queda registrado con su explicación, y se puede volver atrás si algo se rompe.</td>
+  </tr>
+  <tr>
+    <td><strong>GitHub Pages</strong></td>
+    <td>Publicar el sitio en internet.</td>
+    <td>Hospedaje gratuito, con HTTPS incluido y publicación automática cada vez que se sube un cambio.</td>
+  </tr>
+  <tr>
+    <td><strong>SVG</strong></td>
+    <td>Logo, íconos e ilustraciones.</td>
+    <td>Son dibujos hechos con texto: pesan poco, se ven nítidos en cualquier pantalla y van dentro del propio código, sin descargas extra.</td>
+  </tr>
+</table>
+
+<div class="caja">
+  <h4>Un dato para la exposición</h4>
+  <p>
+    El sitio no carga <strong>ni una sola librería externa</strong>: ni jQuery, ni Bootstrap, ni fuentes
+    de Google, ni íconos de terceros. Todo lo que el navegador descarga sale del propio sitio. Eso
+    hace que cargue rápido incluso con internet lento y que no dependa de servidores ajenos.
+  </p>
+</div>
+
+<!-- ===================== 3 ===================== -->
+<h2 class="nueva-pagina">3. Cómo está organizado el proyecto</h2>
+<p>
+  Los archivos están separados por responsabilidad: cada uno hace una cosa. Así, para cambiar un
+  precio no hay que tocar el diseño, y para cambiar un color no hay que entender la lógica del carrito.
+</p>
+
+<div class="esquema"><b>gamasport/</b>
+├── index.html            <b>· inicio</b>
+├── catalogo.html         <b>· lista de servicios con filtros</b>
+├── producto.html         <b>· detalle de un servicio</b>
+├── carrito.html          <b>· carrito y cupones</b>
+├── checkout.html         <b>· datos, fecha, hora y pago</b>
+├── confirmacion.html     <b>· comprobante de la reserva</b>
+├── cuenta.html           <b>· registro, sesión e historial</b>
+├── admin.html            <b>· panel del personal</b>
+├── promociones.html · nosotros.html · contacto.html
+├── privacidad.html · terminos.html · 404.html
+│
+├── css/
+│   ├── styles.css        <b>· todo el diseño</b>
+│   └── animations.css    <b>· movimiento y efectos</b>
+│
+├── js/
+│   ├── products.js       <b>· datos del negocio y catálogo</b>
+│   ├── app.js            <b>· la lógica de todas las páginas</b>
+│   ├── auth.js           <b>· cuentas contra Firebase</b>
+│   ├── cloud.js          <b>· lectura y escritura en la base de datos</b>
+│   ├── assets.js         <b>· íconos e ilustraciones en SVG</b>
+│   └── effects.js        <b>· animaciones al bajar la página</b>
+│
+├── img/                  <b>· fotos de las canchas y los servicios</b>
+├── firestore.rules       <b>· quién puede leer y escribir cada cosa</b>
+└── sw.js                 <b>· funcionamiento sin conexión</b></div>
+
+<h3>El archivo que más importa entender</h3>
+<p>
+  <code>js/products.js</code> concentra los datos del negocio: nombre, teléfono, dirección, horario,
+  moneda, porcentaje de impuesto, número de canchas, las cuatro categorías, los once servicios con su
+  precio y sus características, y las promociones. Cambiar un precio o agregar un servicio se hace
+  ahí, en un solo lugar, y se refleja en todo el sitio automáticamente.
+</p>
+
+<!-- ===================== 4 ===================== -->
+<h2>4. Arquitectura: qué pasa cuando alguien entra</h2>
+<p>
+  El sitio es estático: GitHub Pages entrega los archivos tal cual, sin ejecutar nada del lado del
+  servidor. Toda la lógica corre en el navegador del visitante, y lo que necesita guardarse de forma
+  permanente viaja a Firebase.
+</p>
+
+<div class="esquema">   NAVEGADOR DEL CLIENTE                       EN LA NUBE (Google)
+
+   ┌─────────────────────────┐                ┌──────────────────────────┐
+   │  Páginas HTML y CSS     │ ◄──────────────│  GitHub Pages            │
+   │  JavaScript del sitio   │   archivos     │  (entrega los archivos)  │
+   └───────────┬─────────────┘                └──────────────────────────┘
+               │
+               │  correo y contraseña          ┌──────────────────────────┐
+               ├──────────────────────────────►│  Firebase Authentication │
+               │  ◄── credencial temporal      │  (guarda las claves)     │
+               │                               └──────────────────────────┘
+               │
+               │  consultas con credencial     ┌──────────────────────────┐
+               ├──────────────────────────────►│  Firestore               │
+               │  ◄── solo lo que le toca      │  reservas, perfiles,     │
+               │                               │  horarios, precios       │
+   ┌───────────┴─────────────┐                 │                          │
+   │  Copia local            │                 │  firestore.rules decide  │
+   │  (carrito y catálogo)   │                 │  quién ve qué            │
+   └─────────────────────────┘                 └──────────────────────────┘</div>
+
+<h3>Por qué hay una copia local</h3>
+<p>
+  El carrito, el catálogo con sus precios y la lista de horas ocupadas se guardan también en el
+  navegador. Así las páginas se dibujan al instante, sin esperar a la nube, y si la conexión falla el
+  visitante puede seguir navegando. La única acción que exige conexión de verdad es confirmar una
+  reserva, porque es la nube la que decide quién se queda con la hora.
+</p>
+
+<!-- ===================== 5 ===================== -->
+<h2 class="nueva-pagina">5. Recorrido por las páginas</h2>
+<table>
+  <tr><th style="width:26%">Página</th><th>Qué hace</th></tr>
+  <tr><td><strong>Inicio</strong><br><code>index.html</code></td><td>Portada con el carrusel de canchas que cambia según la hora del día, los servicios destacados, cómo funciona la reserva en cuatro pasos, promociones y contacto.</td></tr>
+  <tr><td><strong>Servicios</strong><br><code>catalogo.html</code></td><td>Los once servicios con filtros por categoría, buscador y el estado de disponibilidad de cada uno.</td></tr>
+  <tr><td><strong>Detalle</strong><br><code>producto.html</code></td><td>Ficha completa de un servicio: descripción, características, precio, cupos y el botón para agregarlo al carrito.</td></tr>
+  <tr><td><strong>Carrito</strong><br><code>carrito.html</code></td><td>Lo que se va a reservar, con cantidades editables, aplicación de cupones y el desglose de subtotal, descuento e impuesto.</td></tr>
+  <tr><td><strong>Pago</strong><br><code>checkout.html</code></td><td>Datos del cliente, fecha y hora de la reserva con las horas ocupadas deshabilitadas, y método de pago.</td></tr>
+  <tr><td><strong>Confirmación</strong><br><code>confirmacion.html</code></td><td>Comprobante con número de pedido, detalle de la reserva y botones para confirmar por WhatsApp, enviar por correo o imprimir.</td></tr>
+  <tr><td><strong>Mi cuenta</strong><br><code>cuenta.html</code></td><td>Registro, inicio de sesión, recuperación de contraseña e historial de reservas propias.</td></tr>
+  <tr><td><strong>Administración</strong><br><code>admin.html</code></td><td>Área privada del personal. Requiere cuenta autorizada.</td></tr>
+  <tr><td><strong>Promociones</strong><br><code>promociones.html</code></td><td>Las promociones vigentes con su cupón.</td></tr>
+  <tr><td><strong>Nosotros</strong><br><code>nosotros.html</code></td><td>Quiénes son, las instalaciones y los valores del centro.</td></tr>
+  <tr><td><strong>Contacto</strong><br><code>contacto.html</code></td><td>Formulario que abre WhatsApp con el mensaje ya escrito, y la ubicación.</td></tr>
+  <tr><td><strong>Legales</strong><br><code>privacidad.html</code> · <code>terminos.html</code></td><td>Política de privacidad y términos y condiciones.</td></tr>
+  <tr><td><strong>Error 404</strong><br><code>404.html</code></td><td>Aparece si alguien entra a una dirección que no existe. Lleva de vuelta al inicio o al catálogo.</td></tr>
+</table>
+
+<!-- ===================== 6 ===================== -->
+<h2>6. El catálogo y el carrito</h2>
+<h3>Cómo se calcula lo que se paga</h3>
+<p>El total sigue siempre el mismo orden, que es el que exige la lógica fiscal hondureña:</p>
+<div class="esquema">   Subtotal        = suma de (precio del servicio × cantidad)
+   Descuento       = subtotal × porcentaje del cupón
+   Base gravable   = subtotal − descuento
+   ISV (15 %)      = base gravable × 0.15
+   <b>Total a pagar   = base gravable + ISV</b></div>
+<p>
+  El descuento se aplica <strong>antes</strong> del impuesto, no después. Esto importa: el impuesto se
+  calcula sobre lo que el cliente realmente paga por el servicio, no sobre el precio de lista.
+</p>
+
+<h3>Los cupones</h3>
+<table>
+  <tr><th>Cupón</th><th style="width:16%">Descuento</th><th>Pensado para</th></tr>
+  <tr><td><code>GAMA10</code></td><td>10 %</td><td>Primera reserva de un equipo nuevo.</td></tr>
+  <tr><td><code>EQUIPO15</code></td><td>15 %</td><td>Paquetes, torneos y cumpleaños deportivos.</td></tr>
+  <tr><td><code>SEMANA15</code></td><td>15 %</td><td>Reservas de lunes a jueves, para llenar las horas flojas.</td></tr>
+</table>
+
+<h3>Control de cupos</h3>
+<p>
+  Cada servicio tiene un número de cupos. El carrito nunca deja agregar más de los que hay, el botón
+  se deshabilita cuando se agotan y la ficha muestra el estado real: disponible, últimas unidades o
+  agotado. El personal puede cambiar esos cupos desde el panel.
+</p>
+
+<!-- ===================== 7 ===================== -->
+<h2 class="nueva-pagina">7. El flujo de reserva, paso a paso</h2>
+<p>Este es el corazón del sitio y conviene explicarlo despacio en el video.</p>
+
+<div class="flujo">
+  <div class="paso"><div class="num">1</div><div class="txt">
+    <b>Elegir el servicio</b>
+    El cliente entra al catálogo, filtra por categoría o busca, y abre la ficha del servicio que quiere.
+  </div></div>
+  <div class="paso"><div class="num">2</div><div class="txt">
+    <b>Agregar al carrito</b>
+    Escoge la cantidad y agrega. El carrito queda guardado en su navegador, así que puede cerrar la
+    página y volver después sin perderlo.
+  </div></div>
+  <div class="paso"><div class="num">3</div><div class="txt">
+    <b>Aplicar cupón si tiene</b>
+    En el carrito revisa el desglose con el descuento y el impuesto ya calculados.
+  </div></div>
+  <div class="paso"><div class="num">4</div><div class="txt">
+    <b>Escoger fecha y hora</b>
+    Al elegir la fecha, el sitio consulta qué horas están tomadas y las deshabilita en la lista. El
+    cliente solo puede elegir entre lo que de verdad está libre.
+  </div></div>
+  <div class="paso"><div class="num">5</div><div class="txt">
+    <b>Llenar sus datos y el pago</b>
+    Nombre, correo y teléfono, y el método de pago. Todos los campos se validan antes de continuar:
+    correo con formato correcto, teléfono de al menos ocho dígitos, fecha que no sea de un día pasado.
+  </div></div>
+  <div class="paso"><div class="num">6</div><div class="txt">
+    <b>Confirmar</b>
+    Aquí ocurre lo importante: el sitio aparta la cancha en la nube y solo entonces guarda el pedido.
+    Si algo falla, avisa y no vacía el carrito.
+  </div></div>
+  <div class="paso"><div class="num">7</div><div class="txt">
+    <b>Comprobante</b>
+    Se genera un número de pedido con formato <code>GS-AAAAMMDD-NNNN</code> y el cliente puede
+    confirmarlo por WhatsApp, mandárselo por correo o imprimirlo.
+  </div></div>
+</div>
+
+<div class="caja aviso">
+  <h4>Por qué confirmar una reserva sí necesita internet</h4>
+  <p>
+    El resto del sitio funciona sin conexión, pero la confirmación no, y es a propósito. Si se
+    permitiera reservar sin conexión, dos personas podrían quedarse con la misma hora sin que el
+    sistema lo sepa. Es preferible mostrar un error claro a entregar un comprobante que nadie tiene
+    registrado.
+  </p>
+</div>
+
+<!-- ===================== 8 ===================== -->
+<h2>8. Cómo se evita que dos personas reserven la misma hora</h2>
+<p>
+  Es el problema clásico de todo sistema de reservas: dos clientes que confirman al mismo segundo. La
+  solución del sitio no depende de la suerte ni de revisar antes si está libre, porque entre revisar y
+  guardar siempre puede colarse alguien.
+</p>
+<p>
+  Cada combinación de <strong>fecha, hora y cancha</strong> se guarda como un documento con un nombre
+  único, por ejemplo <code>2026-08-10_19-00_c1</code>. La base de datos no permite crear dos
+  documentos con el mismo nombre. Entonces:
+</p>
+<div class="esquema">   Cliente A confirma las 7:00 PM  ─►  crea <b>2026-08-10_19-00_c1</b>   ✔ se queda con la cancha 1
+   Cliente B confirma las 7:00 PM  ─►  intenta el mismo nombre       ✘ ya existe
+                                   ─►  intenta <b>..._c2</b>                ✔ se queda con la cancha 2
+   Cliente C confirma las 7:00 PM  ─►  las dos canchas ocupadas      ✘ "esa hora se acaba de ocupar"</div>
+<p>
+  Como GamaSport tiene dos canchas, el sistema intenta primero la cancha 1 y luego la 2. Cuando ambas
+  están tomadas, la hora desaparece de las opciones disponibles. Si el personal cancela una reserva
+  desde el panel, esa cancha vuelve a quedar libre automáticamente.
+</p>
+<div class="caja">
+  <h4>Comprobado en la práctica</h4>
+  <p>
+    Se probó sobre el sitio publicado: la primera reserva tomó la cancha 1, la segunda la cancha 2 y
+    la tercera recibió el aviso de hora ocupada. Los datos de esa prueba se borraron después.
+  </p>
+</div>
+
+<!-- ===================== 9 ===================== -->
+<h2 class="nueva-pagina">9. Cuentas de usuario y seguridad</h2>
+
+<h3>Quién puede entrar y cómo</h3>
+<table>
+  <tr><th style="width:24%">Tipo</th><th>Cómo entra</th><th>Qué alcanza</th></tr>
+  <tr><td><strong>Visitante</strong></td><td>Sin cuenta.</td><td>Ver el catálogo, los precios y qué horas están libres.</td></tr>
+  <tr><td><strong>Invitado</strong></td><td>Se le crea una identidad temporal al confirmar una reserva.</td><td>Solo sus propias reservas. Si después se registra con correo, conserva las que hizo.</td></tr>
+  <tr><td><strong>Cliente</strong></td><td>Correo y contraseña.</td><td>Su perfil y su historial de reservas. Nada de otros clientes.</td></tr>
+  <tr><td><strong>Personal</strong></td><td>Correo y contraseña, más una autorización que solo se otorga desde la consola de Firebase.</td><td>Todas las reservas, los precios, los cupos, los horarios bloqueados y la lista de clientes.</td></tr>
+</table>
+
+<h3>Las contraseñas</h3>
+<p>
+  El sitio <strong>nunca guarda ni ve las contraseñas</strong>. Cuando alguien se registra, la
+  contraseña viaja cifrada a Firebase Authentication, que la guarda transformada de manera
+  irreversible. Al iniciar sesión, Firebase la verifica y devuelve una credencial temporal que dura una
+  hora y se renueva sola. Recuperar la contraseña envía un correo con un enlace, así que nadie puede
+  cambiar la clave de otra persona con solo conocer su correo.
+</p>
+
+<h3>Las reglas de la base de datos</h3>
+<p>
+  La clave del proyecto de Firebase viaja dentro del sitio y cualquiera puede verla: así funciona toda
+  aplicación web. Por eso la seguridad real no está en esconder esa clave, sino en las reglas del
+  archivo <code>firestore.rules</code>, que se aplican del lado de Google y no se pueden saltar desde
+  el navegador.
+</p>
+<table>
+  <tr><th style="width:24%">Información</th><th>Quién puede leerla</th><th>Quién puede modificarla</th></tr>
+  <tr><td>Horas ocupadas</td><td>Cualquiera, porque el calendario debe funcionar sin iniciar sesión. No incluye datos de personas.</td><td>Quien tenga sesión, solo para apartar su hora.</td></tr>
+  <tr><td>Reservas</td><td>El cliente que la hizo, y el personal.</td><td>Solo el personal cambia su estado.</td></tr>
+  <tr><td>Perfiles de clientes</td><td>El propio cliente y el personal.</td><td>Solo el propio cliente.</td></tr>
+  <tr><td>Precios y cupos</td><td>Cualquiera, porque salen en el catálogo.</td><td>Solo el personal.</td></tr>
+  <tr><td>Lista de autorizados</td><td>Cada quien puede consultar si él mismo lo está.</td><td>Nadie desde el sitio. Solo desde la consola de Firebase.</td></tr>
+</table>
+
+<div class="caja ojo">
+  <h4>Una lección que vale contar en el video</h4>
+  <p>
+    En una revisión de seguridad se encontró que la base de datos estaba abierta: cualquiera con la
+    dirección del sitio podía leer los nombres, correos y teléfonos de los clientes, y también borrar
+    o falsear reservas. Además, la contraseña del panel estaba escrita dentro del código, a la vista
+    de cualquiera que abriera el archivo.
+  </p>
+  <p>
+    Ambas cosas se corrigieron: hoy las reglas cierran el acceso, cada quien ve solo lo suyo, y el
+    permiso de administrador ya no depende de una contraseña escrita en el código sino de una
+    autorización que solo se otorga desde la consola de Firebase. Es un buen ejemplo de que la
+    seguridad de un sitio no está en el diseño ni en el código bonito, sino en quién puede hacer qué.
+  </p>
+</div>
+
+<!-- ===================== 10 ===================== -->
+<h2>10. El panel administrativo</h2>
+<p>
+  Está en <code>admin.html</code>, no aparece en el menú y los buscadores tienen instrucción de no
+  indexarlo. Entrar requiere una cuenta autorizada; una cuenta de cliente normal recibe un aviso de
+  que no tiene permisos.
+</p>
+<h3>Qué se puede hacer desde ahí</h3>
+<ul>
+  <li><strong>Ver el resumen:</strong> reservas totales, pendientes, ingresos registrados, horarios bloqueados, servicios disponibles y usuarios registrados.</li>
+  <li><strong>Gestionar reservas:</strong> cada una con su cliente, teléfono, fecha, total y método de pago. El estado se cambia entre pendiente, confirmada, atendida y cancelada.</li>
+  <li><strong>Editar el catálogo:</strong> cambiar el precio y los cupos de cada servicio, u ocultarlo del catálogo sin borrarlo. Hay un botón para restaurar los valores originales.</li>
+  <li><strong>Ver los clientes registrados</strong> con su nombre, correo, fecha de registro y cuántas reservas llevan.</li>
+  <li><strong>Bloquear horarios</strong> por mantenimiento, ligas privadas o eventos. Un horario bloqueado desaparece de las opciones del cliente.</li>
+</ul>
+<p>
+  Cancelar una reserva libera automáticamente esa cancha en el calendario, para que otro cliente pueda
+  tomarla.
+</p>
+
+<!-- ===================== 11 ===================== -->
+<h2>11. El asistente de preguntas frecuentes</h2>
+<p>
+  Es el botón redondo que aparece abajo a la derecha. <strong>No es inteligencia artificial</strong>, y
+  conviene aclararlo en el video porque suele preguntarse: es una lista de catorce preguntas con sus
+  respuestas escritas a mano.
+</p>
+<p>
+  Cuando alguien escribe, el texto se compara con las palabras clave de cada pregunta. Las palabras
+  largas pesan más que las cortas, porque "cancelar" dice mucho más que "como". Gana la respuesta con
+  más coincidencias, y si ninguna coincide se ofrece el contacto por WhatsApp. Responde sobre precios,
+  horarios, cómo reservar, promociones, formas de pago, cancelaciones, torneos, restaurante,
+  membresías, parqueo, capacidad y ubicación.
+</p>
+
+<!-- ===================== 12 ===================== -->
+<h2 class="nueva-pagina">12. Normativa de comercio electrónico y cómo se aplica</h2>
+<p>
+  Un sitio que vende en Honduras no se rige por una sola ley, sino por varias que se combinan. A
+  continuación, qué exige cada una y dónde se refleja en la plataforma.
+</p>
+
+<h3>12.1 Ley sobre Comercio Electrónico (Decreto 149-2014)</h3>
+<p>
+  Da validez legal a los contratos y comprobantes hechos por medios electrónicos, y exige que el
+  comercio se identifique y que el cliente pueda conservar constancia de la operación.
+</p>
+<table>
+  <tr><th style="width:44%">Lo que exige</th><th>Cómo lo cumple el sitio</th></tr>
+  <tr><td>Identificar plenamente al comercio</td><td>Nombre, dirección física, teléfono y correo aparecen en el pie de todas las páginas y en la de contacto.</td></tr>
+  <tr><td>Que el cliente conserve constancia de la operación</td><td>Comprobante con número de pedido único, que se puede imprimir, enviar por correo o guardar en WhatsApp. Además queda en su cuenta.</td></tr>
+  <tr><td>Consentimiento expreso del cliente</td><td>La reserva se confirma con una acción deliberada, después de mostrar el resumen completo con el total.</td></tr>
+  <tr><td>Conservación de los registros</td><td>Cada reserva queda almacenada con su fecha y hora exactas en la base de datos.</td></tr>
+</table>
+
+<h3>12.2 Ley de Protección al Consumidor (Decreto 24-2008)</h3>
+<table>
+  <tr><th style="width:44%">Lo que exige</th><th>Cómo lo cumple el sitio</th></tr>
+  <tr><td>Precio final claro, sin cargos ocultos</td><td>El carrito y el pago muestran el desglose completo: subtotal, descuento, ISV y total. No hay cargos que aparezcan al final.</td></tr>
+  <tr><td>Información veraz del servicio</td><td>Cada ficha detalla duración, horario, capacidad y qué incluye.</td></tr>
+  <tr><td>Publicidad no engañosa</td><td>Las promociones indican su porcentaje, su cupón y a qué servicios aplican.</td></tr>
+  <tr><td>Condiciones de cancelación conocidas de antemano</td><td>Política publicada en términos y condiciones: cancelando con más de 24 horas se devuelve el total o se reprograma sin costo.</td></tr>
+  <tr><td>Canal de reclamo</td><td>Teléfono, WhatsApp, correo y formulario de contacto, visibles en todas las páginas.</td></tr>
+</table>
+
+<h3>12.3 Impuesto Sobre Ventas</h3>
+<p>
+  La tasa general del ISV en Honduras es del <strong>15 %</strong>. El sitio lo calcula sobre la base
+  gravable, es decir después de aplicar el descuento del cupón, y lo muestra como una línea separada
+  en el carrito, en el pago y en el comprobante. El porcentaje está configurado en un solo lugar del
+  código, así que si la tasa cambiara bastaría con modificar ese valor.
+</p>
+
+<h3>12.4 Datos personales</h3>
+<p>
+  Honduras no cuenta todavía con una ley general de protección de datos personales equivalente a las
+  de otros países de la región, pero la Constitución reconoce el habeas data, es decir el derecho de
+  toda persona a saber qué información suya se guarda y a corregirla. Sobre esa base, la plataforma
+  aplica los principios aceptados internacionalmente:
+</p>
+<ul>
+  <li><strong>Pedir solo lo necesario:</strong> nombre, correo y teléfono. No se solicita identidad, dirección de casa ni fecha de nacimiento.</li>
+  <li><strong>Decir para qué se usa:</strong> la política de privacidad explica qué se guarda y con qué fin.</li>
+  <li><strong>Acceso restringido:</strong> las reglas de la base de datos impiden que un cliente vea los datos de otro. Solo el personal autorizado ve el conjunto.</li>
+  <li><strong>Transmisión cifrada:</strong> todo el sitio viaja por HTTPS.</li>
+  <li><strong>No compartir con terceros:</strong> los datos no se venden ni se ceden con fines publicitarios.</li>
+</ul>
+
+<h3>12.5 Facturación</h3>
+<p>
+  En Honduras la factura fiscal requiere autorización del Servicio de Administración de Rentas y debe
+  llevar su Clave de Autorización de Impresión. El comprobante que genera el sitio
+  <strong>no es una factura fiscal</strong>: es una constancia de reserva con número propio. Para
+  operar de forma comercial habría que integrar la facturación autorizada, y así está señalado en el
+  apartado de lo que quedó fuera.
+</p>
+
+<div class="caja aviso">
+  <h4>Aclaración necesaria</h4>
+  <p>
+    Este apartado explica cómo se aplicaron los criterios legales en el diseño de la plataforma, con
+    fines académicos. No sustituye la revisión de un abogado o un contador, que es lo que
+    correspondería antes de poner el negocio a operar de verdad.
+  </p>
+</div>
+
+<!-- ===================== 13 ===================== -->
+<h2 class="nueva-pagina">13. Publicación en internet y funcionamiento sin conexión</h2>
+<h3>Cómo llega el sitio a internet</h3>
+<div class="flujo">
+  <div class="paso"><div class="num">1</div><div class="txt"><b>Se hace un cambio en el código</b>Se edita el archivo que corresponda en la computadora.</div></div>
+  <div class="paso"><div class="num">2</div><div class="txt"><b>Se registra con su explicación</b>El cambio se guarda en el historial con una descripción de qué se hizo y por qué.</div></div>
+  <div class="paso"><div class="num">3</div><div class="txt"><b>Se sube a GitHub</b>El repositorio queda actualizado y con el historial completo.</div></div>
+  <div class="paso"><div class="num">4</div><div class="txt"><b>GitHub Pages publica solo</b>En uno o dos minutos el sitio en línea ya muestra el cambio, con HTTPS incluido.</div></div>
+</div>
+
+<h3>Direcciones y certificado</h3>
+<p>
+  El sitio vive en <code>ylimecc.github.io/gamasport</code> y se sirve siempre cifrado con HTTPS, lo
+  que además de proteger los datos es un requisito para que los navegadores no marquen el sitio como
+  no seguro y para posicionar mejor en buscadores.
+</p>
+
+<h3>Qué pasa si se cae el internet</h3>
+<p>
+  El sitio registra un pequeño programa en el navegador (llamado service worker) que guarda una página
+  de respaldo. Si alguien intenta navegar sin conexión, en vez del error del navegador ve una página
+  con la marca de GamaSport y los enlaces para volver. El carrito y los precios siguen disponibles
+  porque están guardados en el propio navegador.
+</p>
+
+<!-- ===================== 14 ===================== -->
+<h2>14. Posicionamiento y presencia en redes</h2>
+<ul>
+  <li><strong>Título y descripción propios en cada página,</strong> pensados para que en el buscador se entienda qué ofrece antes de entrar.</li>
+  <li><strong>Dirección canónica,</strong> que le indica al buscador cuál es la dirección oficial de cada página y evita que se considere contenido duplicado.</li>
+  <li><strong>Imagen al compartir:</strong> cuando alguien manda el enlace por WhatsApp o lo publica en redes, aparece una tarjeta con foto de la cancha, el título y la descripción, en lugar de un enlace suelto.</li>
+  <li><strong>Estructura con significado:</strong> encabezados jerárquicos y etiquetas descriptivas que ayudan a los buscadores a entender el contenido.</li>
+  <li><strong>Textos alternativos en las imágenes,</strong> que sirven para los buscadores y para quienes usan lectores de pantalla.</li>
+  <li><strong>Carga rápida:</strong> sin librerías externas, con imágenes que se cargan solo cuando hacen falta.</li>
+</ul>
+
+<!-- ===================== 15 ===================== -->
+<h2>15. Pruebas realizadas</h2>
+<table>
+  <tr><th style="width:34%">Qué se probó</th><th>Cómo</th><th style="width:18%">Resultado</th></tr>
+  <tr><td>Flujo completo de reserva</td><td>Reserva real sobre el sitio publicado, de principio a fin.</td><td>Correcto</td></tr>
+  <tr><td>Dos personas, la misma hora</td><td>Tres intentos consecutivos sobre el mismo horario.</td><td>Cancha 1, cancha 2 y aviso de ocupado</td></tr>
+  <tr><td>Acceso a datos ajenos</td><td>Peticiones a la base de datos sin haber iniciado sesión.</td><td>Rechazadas</td></tr>
+  <tr><td>Escritura sin permiso</td><td>Intento de crear una reserva sin sesión.</td><td>Rechazada</td></tr>
+  <tr><td>Errores de acceso</td><td>Inicio de sesión con credenciales inexistentes.</td><td>Mensaje claro, sin exponer si el correo existe</td></tr>
+  <tr><td>Reserva sin conexión</td><td>Confirmación con la nube caída.</td><td>Avisa y conserva el carrito</td></tr>
+  <tr><td>Adaptación a pantallas</td><td>Navegación automatizada a 360, 768 y 1280 píxeles.</td><td>Sin desplazamiento horizontal</td></tr>
+  <tr><td>Enlaces y botones</td><td>Clics reales automatizados en los tres tamaños.</td><td>Todos llevan a donde deben</td></tr>
+</table>
+
+<!-- ===================== 16 ===================== -->
+<h2>16. Qué quedó fuera y por qué</h2>
+<p>
+  Decir con claridad los límites del proyecto suma en una exposición, porque demuestra que se
+  entiende la diferencia entre un prototipo académico y un sistema en producción.
+</p>
+<table>
+  <tr><th style="width:34%">Pendiente</th><th>Por qué</th></tr>
+  <tr><td>Cobro real con tarjeta</td><td>La pasarela está en modo de prueba. Cobrar de verdad exige un contrato con el banco o el procesador de pagos y un servidor propio que reciba las notificaciones.</td></tr>
+  <tr><td>Factura fiscal con CAI</td><td>Requiere el trámite de autorización ante el Servicio de Administración de Rentas.</td></tr>
+  <tr><td>Correo automático de confirmación</td><td>Hoy la confirmación se envía por WhatsApp o por el correo del propio cliente. El envío automático necesita un servicio de correo con servidor.</td></tr>
+  <tr><td>Recordatorio antes del partido</td><td>Requiere una tarea programada, que un sitio estático no puede ejecutar por sí solo.</td></tr>
+  <tr><td>Reporte de ingresos por período</td><td>El panel muestra el acumulado; falta filtrar por rango de fechas y exportar.</td></tr>
+</table>
+
+<!-- ===================== 17 ===================== -->
+<h2 class="nueva-pagina">17. Guion sugerido para el video</h2>
+<p>
+  Propuesta de reparto para una exposición de entre ocho y diez minutos. Cada bloque indica qué
+  mostrar en pantalla mientras se habla.
+</p>
+<table>
+  <tr><th style="width:12%">Minuto</th><th style="width:26%">Bloque</th><th>Qué decir y qué mostrar</th></tr>
+  <tr><td>0:00 a 1:00</td><td>El negocio y el problema</td><td>Mostrar el inicio. Explicar qué es GamaSport y los tres problemas de reservar por teléfono.</td></tr>
+  <tr><td>1:00 a 2:00</td><td>Herramientas</td><td>Explicar por qué se eligió web pura sin frameworks y qué aporta Firebase. Recalcar que no carga ninguna librería externa.</td></tr>
+  <tr><td>2:00 a 4:00</td><td>Recorrido de compra</td><td>Hacer una reserva en vivo: catálogo, ficha, carrito, cupón, desglose del ISV, fecha y hora, confirmación.</td></tr>
+  <tr><td>4:00 a 5:00</td><td>La hora única</td><td>Explicar con el esquema del apartado 8 por qué dos personas no pueden llevarse la misma cancha.</td></tr>
+  <tr><td>5:00 a 6:30</td><td>Seguridad</td><td>Contar el hallazgo de la base de datos abierta y cómo se corrigió. Mostrar que un cliente solo ve sus reservas.</td></tr>
+  <tr><td>6:30 a 7:30</td><td>Panel del personal</td><td>Entrar al panel, cambiar el estado de una reserva y bloquear un horario.</td></tr>
+  <tr><td>7:30 a 8:30</td><td>Marco legal</td><td>Explicar el ISV, la información obligatoria del comercio, la política de cancelación y el manejo de datos.</td></tr>
+  <tr><td>8:30 a 9:30</td><td>Límites y cierre</td><td>Decir con claridad qué quedó fuera y qué haría falta para operar de verdad.</td></tr>
+</table>
+
+<div class="caja">
+  <h4>Tres frases que conviene tener listas</h4>
+  <p>
+    <strong>Sobre la clave visible:</strong> "La clave del proyecto se ve en el código a propósito;
+    así funciona toda aplicación web. La seguridad real está en las reglas del servidor, que dicen
+    quién puede leer y escribir cada cosa."
+  </p>
+  <p>
+    <strong>Sobre el asistente:</strong> "No es inteligencia artificial: son catorce preguntas con sus
+    respuestas y un sistema de coincidencia por palabras clave."
+  </p>
+  <p>
+    <strong>Sobre el pago:</strong> "La pasarela está en modo de prueba. No se cobra dinero real, y eso
+    está indicado en pantalla para no confundir a nadie."
+  </p>
+</div>
+
+<!-- ===================== 18 ===================== -->
+<h2>18. Glosario</h2>
+<table>
+  <tr><th style="width:26%">Término</th><th>Qué significa</th></tr>
+  <tr><td>Sitio estático</td><td>Un sitio cuyos archivos se entregan tal cual, sin que un programa los arme en el servidor cada vez.</td></tr>
+  <tr><td>HTTPS</td><td>La versión cifrada de la conexión web. Impide que alguien en la misma red lea lo que se envía.</td></tr>
+  <tr><td>Base de datos en la nube</td><td>Un lugar en internet donde se guarda la información de forma permanente, accesible desde cualquier dispositivo.</td></tr>
+  <tr><td>Reglas de seguridad</td><td>Las condiciones que decide el servidor sobre quién puede leer o escribir cada dato. No se pueden saltar desde el navegador.</td></tr>
+  <tr><td>Autenticación</td><td>Comprobar que alguien es quien dice ser, normalmente con correo y contraseña.</td></tr>
+  <tr><td>Sesión anónima</td><td>Identidad temporal que el sistema asigna a quien usa el sitio sin registrarse, para poder distinguir sus datos de los de otros.</td></tr>
+  <tr><td>Almacenamiento local</td><td>Espacio del navegador donde el sitio guarda datos, como el carrito, que sobreviven al cerrar la página.</td></tr>
+  <tr><td>Service worker</td><td>Programa pequeño que el navegador ejecuta aparte y permite que el sitio responda sin conexión.</td></tr>
+  <tr><td>Diseño adaptable</td><td>Que la misma página se acomode bien tanto en celular como en computadora.</td></tr>
+  <tr><td>Repositorio</td><td>La carpeta del proyecto con todo su historial de cambios.</td></tr>
+  <tr><td>ISV</td><td>Impuesto Sobre Ventas. En Honduras su tasa general es del 15 %.</td></tr>
+  <tr><td>CAI</td><td>Clave de Autorización de Impresión, el código que autoriza la emisión de facturas fiscales.</td></tr>
+</table>
+
+</body>
+</html>
