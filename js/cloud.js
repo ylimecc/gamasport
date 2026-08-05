@@ -131,13 +131,22 @@
     try { localStorage.setItem(clave, JSON.stringify(valor)); } catch (e) {}
   }
 
-  const hoyISO = () => new Date().toISOString().slice(0, 10);
+  /* La fecha de aquí, no la de Greenwich. Con toISOString, a partir de las 6 de
+     la tarde de Honduras ya cuenta como el día siguiente, y las horas de esta
+     noche desaparecían del calendario justo en el horario nocturno.
+     Pido desde ayer para que el cambio de día nunca deje fuera lo de hoy. */
+  function desdeCuando() {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
 
   /* ---------- lo que se baja al abrir cualquier página ---------- */
 
   // disponibilidad: pública, sin datos de nadie, y solo de hoy en adelante
   async function bajarDisponibilidad() {
-    const desde = hoyISO();
+    const desde = desdeCuando();
     const [ocupados, bloqueos] = await Promise.all([
       consultar("ocupados", { campo: "fecha", op: "GREATER_THAN_OR_EQUAL", valor: desde }, false).catch(() => null),
       consultar("bloqueos", { campo: "fecha", op: "GREATER_THAN_OR_EQUAL", valor: desde }, false).catch(() => null)
@@ -245,14 +254,37 @@
     const actual = deFS(d);
     let o = {};
     try { o = JSON.parse(actual.json); } catch (e) {}
+
+    const anterior    = actual.estado || o.estado || "pendiente";
+    const tieneCancha = !!(o.reserva && o.reserva.cancha);
+    const id          = tieneCancha ? slotId(o.reserva.fecha, o.reserva.hora, o.reserva.cancha) : "";
+
+    /* Reactivar una reserva cancelada obliga a apartar su cancha otra vez,
+       porque al cancelarla quedó libre y pudo tomarla alguien más. Se hace
+       ANTES de cambiar el estado: si la hora ya no está, el pedido se queda
+       cancelado en vez de quedar confirmado sobre una cancha ajena. */
+    if (anterior === "cancelada" && nuevo !== "cancelada" && tieneCancha) {
+      try {
+        await crearDoc("ocupados", id, {
+          fecha: o.reserva.fecha, hora: o.reserva.hora,
+          cancha: String(o.reserva.cancha), creado: new Date().toISOString()
+        });
+      } catch (e) {
+        if (e.status === 409) throw new Error("Esa hora ya la tomó otro cliente, así que esta reserva no se puede reactivar.");
+        throw e;
+      }
+    }
+
     o.estado = nuevo;
     await grabarDoc("pedidos", numero, {
       uid: actual.uid, json: JSON.stringify(o), fecha: actual.fecha, estado: nuevo, creado: actual.creado
     });
-    // al cancelar, la hora vuelve a quedar libre
-    if (nuevo === "cancelada" && o.reserva) {
-      const c = o.reserva.cancha || 1;
-      await borrarDoc("ocupados", slotId(o.reserva.fecha, o.reserva.hora, c)).catch(() => {});
+
+    /* Al cancelar, la hora vuelve a quedar libre. Solo si el pedido dice qué
+       cancha ocupó: si no lo dice (pedidos viejos), liberar "la primera" podría
+       estar soltando la reserva de otro cliente. */
+    if (nuevo === "cancelada" && tieneCancha) {
+      await borrarDoc("ocupados", id).catch(() => {});
     }
     return true;
   }

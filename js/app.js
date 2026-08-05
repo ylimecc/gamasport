@@ -49,26 +49,39 @@
     KEY: "gs_cart_v1",
     get() { try { return JSON.parse(localStorage.getItem(this.KEY)) || []; } catch (e) { return []; } },
     save(items) { localStorage.setItem(this.KEY, JSON.stringify(items)); document.dispatchEvent(new Event("cart:change")); },
-    // nunca dejo pasar de los cupos que tiene el servicio
+    /* Cuántas unidades admite un servicio. Cero significa que no se puede
+       reservar: agotado o retirado del catálogo por el personal. */
     tope(id) {
       const p = getProduct(id);
-      const cupos = p && p.stock != null ? p.stock : 50;
-      return Math.max(1, Math.min(50, cupos));
+      if (!p || p.activo === false) return 0;
+      const cupos = p.stock != null ? p.stock : 50;
+      return Math.max(0, Math.min(50, cupos));
     },
     add(id, qty) {
       qty = Math.max(1, parseInt(qty || 1, 10));
+      const tope = this.tope(id);
+      if (!tope) return;
       const items = this.get();
       const row = items.find(i => i.id === id);
-      const tope = this.tope(id);
       if (row) row.qty = Math.min(tope, row.qty + qty); else items.push({ id, qty: Math.min(tope, qty) });
       this.save(items);
     },
     setQty(id, qty) {
       qty = parseInt(qty, 10);
       let items = this.get();
-      if (!qty || qty < 1) items = items.filter(i => i.id !== id);
-      else { const row = items.find(i => i.id === id); if (row) row.qty = Math.min(this.tope(id), qty); }
+      const tope = this.tope(id);
+      if (!qty || qty < 1 || !tope) items = items.filter(i => i.id !== id);
+      else { const row = items.find(i => i.id === id); if (row) row.qty = Math.min(tope, qty); }
       this.save(items);
+    },
+    /* El personal puede agotar u ocultar un servicio mientras alguien lo tiene
+       en el carrito. Antes de mostrar el carrito o el pago lo saco y lo digo,
+       en vez de dejar que llegue a pagar algo que ya no existe. */
+    limpiarAgotados() {
+      const items = this.get();
+      const fuera = items.filter(i => !this.tope(i.id));
+      if (fuera.length) this.save(items.filter(i => this.tope(i.id)));
+      return fuera.map(i => { const p = getProduct(i.id); return p ? p.name : i.id; });
     },
     remove(id) { this.save(this.get().filter(i => i.id !== id)); },
     clear() { this.save([]); localStorage.removeItem("gs_coupon"); },
@@ -818,6 +831,7 @@
   function initCart() {
     const root = $("#cartRoot");
     if (!root) return;
+    avisarAgotados();
     function render() {
       const lines = Cart.lines();
       if (!lines.length) {
@@ -878,16 +892,26 @@
 
   /* checkout / pago */
   function pad(n) { return String(n).padStart(2, "0"); }
+  /* El número que ve el cliente. Los seis dígitos dan un millón de
+     combinaciones por día: con cuatro, dos reservas del mismo día chocaban con
+     una facilidad incómoda. Aun así, quien guarda comprueba que no exista. */
   function orderNumber() {
     const d = new Date();
     const ymd = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
-    const rnd = Math.floor(1000 + Math.random() * 9000);
+    const rnd = Math.floor(100000 + Math.random() * 900000);
     return `GS-${ymd}-${rnd}`;
+  }
+
+  // aviso común al carrito y al pago cuando algo se quedó sin cupos
+  function avisarAgotados() {
+    const fuera = Cart.limpiarAgotados();
+    if (fuera.length) showToast("Quitamos del carrito: " + fuera.join(", ") + ". Ya no tiene cupos disponibles.");
   }
 
   function initCheckout() {
     const root = $("#checkoutRoot");
     if (!root) return;
+    avisarAgotados();
     const lines = Cart.lines();
     if (!lines.length) {
       root.innerHTML = `<div class="cart-empty">${icon("cart")}<h2>No hay nada para pagar</h2>
@@ -1086,7 +1110,16 @@
             return;
           }
           order.reserva.cancha = cancha;
-          await Orders.add(order);
+          /* Si el número sorteado ya existía, la nube lo rechaza y se prueba con
+             otro. Sin esto, esa reserva se perdía con un error confuso y la
+             cancha quedaba apartada para nadie. */
+          for (let intento = 1; ; intento++) {
+            try { await Orders.add(order); break; }
+            catch (e) {
+              if (e && e.status === 409 && intento < 4) { order.number = orderNumber(); continue; }
+              throw e;
+            }
+          }
           localStorage.setItem("gs_last_order", JSON.stringify(order));
           Cart.clear();
           location.href = "confirmacion.html";
