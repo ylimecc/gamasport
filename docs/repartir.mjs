@@ -18,7 +18,7 @@ const trozos = {};
 const partes = fuente.split(/<!-- ={5,} (\d+|PORTADA|ÍNDICE) ={5,} -->/);
 for (let i = 1; i < partes.length; i += 2) trozos[partes[i]] = partes[i + 1];
 
-const glosario = trozos['17'];
+const GLOSARIO = '17';   // va al final de los cinco cuadernillos
 
 const TOTAL = 5;
 
@@ -36,7 +36,7 @@ const REPARTO = [
     ],
     preguntas: [
       ['¿Por qué no basta con WhatsApp para reservar?',
-       'Porque el cliente no ve la disponibilidad sin preguntar, dos personas pueden pedir la misma hora, y el control queda en la memoria de quien contesta. Los tres problemas están en el apartado 1.'],
+       'Porque el cliente no ve la disponibilidad sin preguntar, dos personas pueden pedir la misma hora, y el control queda en la memoria de quien contesta. Los tres problemas están en el primer apartado de tu cuadernillo.'],
       ['¿Cuántos servicios ofrece la plataforma?',
        'Once, repartidos en cuatro categorías: alquiler de canchas, torneos y eventos, restaurante, y membresías y extras.'],
       ['¿Qué es la página de administración que aparece en la lista?',
@@ -72,9 +72,9 @@ const REPARTO = [
     minutos: '3:30 a 5:30',
     apartados: ['2', '3', '4', '8'],
     enPantalla: [
-      'El esquema de arquitectura del apartado 4.',
-      'El esquema de la hora única del apartado 8.',
-      'La estructura de carpetas del apartado 3, si hay tiempo.'
+      'El esquema de arquitectura de tu cuadernillo.',
+      'El esquema de las tres personas pidiendo la misma hora.',
+      'La estructura de carpetas del proyecto, si hay tiempo.'
     ],
     preguntas: [
       ['¿Por qué no usaron un framework como React o Bootstrap?',
@@ -165,8 +165,8 @@ const portada = (r) => `
   ${r.preguntas.map(q => `<p><strong>${q[0]}</strong><br>${q[1]}</p>`).join('')}
 </div>
 <p style="color:#55656c;font-size:9.5pt">
-  Lo que sigue son los apartados completos de la documentación que te corresponden. El documento
-  entero, con las dieciocho secciones, está en <code>docs/GamaSport-Documentacion.pdf</code>.
+  Lo que sigue son los apartados de la documentación que te corresponden, con el glosario al final.
+  El documento completo está en <code>docs/GamaSport-Documentacion.pdf</code>.
 </p>
 `;
 
@@ -174,14 +174,20 @@ await mkdir(SALIDA, { recursive: true });
 const navegador = await chromium.launch();
 
 for (const r of REPARTO) {
-  const cuerpo = r.apartados.map(a => trozos[a]).join('\n');
+  /* Los apartados conservan el número que tenían en el documento completo, así que
+     dentro del cuadernillo saldrían salteados (1, 5, 9...). Se renumeran de corrido
+     para que cada cuadernillo se lea como un documento propio. */
+  let i = 0;
+  const cuerpo = [...r.apartados, GLOSARIO]
+    .map(a => trozos[a])
+    .join('\n')
+    .replace(/(<h2[^>]*>)\s*\d+\.\s*/g, (_, abre) => `${abre}${++i}. `);
+
   const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
 <title>GamaSport · Parte ${r.n}: ${r.quien}</title>${estilo}</head><body>
 ${portada(r)}
 <div class="nueva-pagina"></div>
 ${cuerpo}
-<h2 class="nueva-pagina">Glosario</h2>
-${glosario.replace(/<h2>[\s\S]*?<\/h2>/, '')}
 </body></html>`;
 
   const nombreHtml = `${SALIDA}/parte-${r.n}.html`;
