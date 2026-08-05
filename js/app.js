@@ -307,16 +307,26 @@
     while (caja.firstChild) brand.insertBefore(caja.firstChild, donde);
   }
 
-  /* El boletín del footer también lo inyecto para no repetirlo 12 veces */
+  /* El boletín va en su propia franja, justo antes del pie. Lo inyecto desde
+     aquí para no repetir el mismo bloque en las trece páginas. */
   function injectNewsletter() {
-    const brand = $(".site-footer .footer-brand");
-    if (!brand || $("#newsForm")) return;
-    const box = document.createElement("div");
-    box.className = "newsletter";
-    box.innerHTML = `<h4>Boletín de GamaSport</h4>
-      <p>Promociones y torneos en tu correo. Sin spam.</p>
-      <form id="newsForm"><input type="email" required placeholder="Tu correo electrónico" aria-label="Correo para el boletín"><button class="btn btn--lime btn--sm" type="submit">Suscribirme</button></form>`;
-    brand.appendChild(box);
+    const pie = $(".site-footer");
+    if (!pie || $("#newsForm")) return;
+    const banda = document.createElement("section");
+    banda.className = "news-band";
+    banda.setAttribute("aria-labelledby", "newsTitle");
+    banda.innerHTML = `
+      <div class="container news-inner">
+        <div class="news-copy">
+          <h2 id="newsTitle">Promociones y torneos en tu correo</h2>
+          <p>Te avisamos de los cupones nuevos y de los torneos antes que a nadie. Sin spam, y te puedes dar de baja cuando quieras.</p>
+        </div>
+        <form id="newsForm">
+          <input type="email" required placeholder="Tu correo electrónico" aria-label="Correo para el boletín">
+          <button class="btn btn--primary" type="submit">Suscribirme</button>
+        </form>
+      </div>`;
+    pie.parentNode.insertBefore(banda, pie);
     $("#newsForm").addEventListener("submit", (e) => {
       e.preventDefault();
       const mail = e.target.querySelector("input").value.trim().toLowerCase();

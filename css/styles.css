@@ -471,10 +471,9 @@ p { color: var(--text-soft); }
 .footer-brand .brand { margin-bottom: 16px; }
 .footer-brand p { color: #9cb3a9; font-size: .95rem; max-width: 320px; }
 
-/* el lema del negocio, firmado con la barra lima */
+/* el lema del negocio, bajo el logo */
 .footer-eslogan {
   color: #fff; font-size: 1.05rem; font-weight: 700; line-height: 1.4;
-  border-left: 3px solid var(--lime); padding-left: 13px;
   margin: 0 0 12px; max-width: 300px;
 }
 /* si el centro está abierto ahora mismo; lo calcula js/app.js con el horario */
@@ -590,14 +589,26 @@ p { color: var(--text-soft); }
 /* ============ mejoras de la Fase 3 ============ */
 
 /* boletín del footer */
-.newsletter { margin-top: 22px; }
-/* el título del boletín sigue el mismo trato que los de las otras columnas */
-.newsletter h4 { color: #fff; margin-bottom: 14px; }
-.newsletter p { font-size: .88rem; margin-bottom: 10px; }
-.newsletter form { display: flex; gap: 8px; }
-.newsletter input { flex: 1; min-width: 0; padding: 9px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); color: #fff; font: inherit; font-size: .85rem; }
-.newsletter input::placeholder { color: #9ab3aa; }
-.newsletter input:focus { outline: 2px solid var(--lime); }
+/* la franja del boletín, entre el contenido y el pie */
+.news-band { background: var(--bg-soft-2); border-top: 1px solid var(--line); padding: 46px 0; }
+.news-inner { display: flex; align-items: center; justify-content: space-between; gap: 30px; flex-wrap: wrap; }
+.news-copy { max-width: 520px; }
+.news-copy h2 { font-size: 1.5rem; letter-spacing: -.01em; margin-bottom: 8px; }
+.news-copy p { color: var(--text-soft); font-size: .98rem; }
+#newsForm { display: flex; gap: 10px; flex: 1; min-width: 280px; max-width: 470px; }
+#newsForm input {
+  flex: 1; min-width: 0; padding: 14px 16px; border-radius: 12px;
+  border: 1px solid var(--line); background: var(--white); color: var(--text);
+  font: inherit; font-size: .95rem;
+}
+#newsForm input::placeholder { color: var(--muted); }
+#newsForm input:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+#newsForm .btn { flex: none; }
+@media (max-width: 640px) {
+  .news-band { padding: 34px 0; }
+  .news-copy h2 { font-size: 1.28rem; }
+  #newsForm { max-width: none; }
+}
 
 /* puntitos del carrusel del hero */
 .carousel-dots { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
