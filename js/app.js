@@ -1014,8 +1014,12 @@
   function initConfirm() {
     const root = $("#confirmRoot");
     if (!root) return;
-    let order;
-    try { order = JSON.parse(localStorage.getItem("gs_last_order")); } catch (e) { order = null; }
+    /* Si vengo con ?n=NUMERO (desde Mi cuenta) muestro ese pedido; si no,
+       el último que se hizo en este navegador. */
+    let order = null;
+    const num = param("n");
+    if (num) order = Orders.all().find(o => o.number === num) || null;
+    if (!order) { try { order = JSON.parse(localStorage.getItem("gs_last_order")); } catch (e) { order = null; } }
     if (!order) {
       root.innerHTML = `<div class="cart-empty">${icon("info")}<h2>No hay pedidos recientes</h2>
         <p>No encontramos una confirmación de pedido en este navegador.</p>
@@ -1104,7 +1108,7 @@
     return `<div class="orders-wrap"><table class="orders-table">
       <thead><tr><th>Pedido</th><th>Reserva</th><th>Servicios</th><th>Total</th><th>Estado</th></tr></thead>
       <tbody>${list.map(o => `<tr>
-        <td data-th="Pedido"><strong>${esc(o.number)}</strong></td>
+        <td data-th="Pedido"><a href="confirmacion.html?n=${encodeURIComponent(o.number)}"><strong>${esc(o.number)}</strong></a></td>
         <td data-th="Reserva">${esc(o.reserva.fecha)}<br>${esc(o.reserva.hora)}</td>
         <td data-th="Servicios">${o.items.map(i => esc(i.name) + " ×" + i.qty).join("<br>")}</td>
         <td data-th="Total">${money(o.totals.total)}</td>
