@@ -1,4 +1,4 @@
-/* Parte la documentación en cuatro cuadernillos, uno por expositor.
+/* Parte la documentación en cinco cuadernillos, uno por expositor.
    Cada uno lleva sus apartados completos, su tramo del guion, las preguntas
    que le pueden caer y el glosario. */
 import { readFile, writeFile, mkdir } from 'fs/promises';
@@ -25,30 +25,32 @@ const TOTAL = 5;
 const REPARTO = [
   {
     n: 1,
-    quien: 'El negocio y el recorrido del sitio',
-    resumen: 'Abre la exposición: por qué existe la plataforma, qué resuelve y qué contiene cada página.',
-    minutos: '0:00 a 1:30',
-    apartados: ['1', '5'],
+    quien: 'El negocio y cómo está construido',
+    resumen: 'Abre la exposición: por qué existe la plataforma, con qué se hizo y cómo encajan las piezas.',
+    minutos: '0:00 a 2:30',
+    apartados: ['1', '2', '3', '4'],
     enPantalla: [
       'La portada del sitio, para hablar del negocio.',
-      'El menú y el paso por las páginas principales.',
-      'La página de promociones y la de contacto.'
+      'La estructura de carpetas de tu cuadernillo.',
+      'El esquema de arquitectura, para explicar dónde vive cada cosa.'
     ],
     preguntas: [
       ['¿Por qué no basta con WhatsApp para reservar?',
        'Porque el cliente no ve la disponibilidad sin preguntar, dos personas pueden pedir la misma hora, y el control queda en la memoria de quien contesta. Los tres problemas están en el primer apartado de tu cuadernillo.'],
-      ['¿Cuántos servicios ofrece la plataforma?',
-       'Once, repartidos en cuatro categorías: alquiler de canchas, torneos y eventos, restaurante, y membresías y extras.'],
-      ['¿Qué es la página de administración que aparece en la lista?',
-       'El área privada del personal. No está en el menú y los buscadores tienen instrucción de no indexarla. Mi compañero la explica más adelante.']
+      ['¿Por qué no usaron un framework como React o Bootstrap?',
+       'Para catorce páginas no aporta nada y sí agrega complejidad: habría que compilar, actualizar dependencias y cargar código extra. El sitio no descarga ni una librería externa, y por eso carga rápido aunque el internet esté lento.'],
+      ['¿Dónde está el servidor?',
+       'No hay servidor propio. GitHub Pages solo entrega archivos y toda la lógica corre en el navegador; lo que debe quedar guardado viaja a Firebase. Por eso la seguridad vive en las reglas de Firebase, que explica el tercer integrante.'],
+      ['¿Por qué eligieron Firebase?',
+       'Porque hacía falta guardar reservas y verificar contraseñas sin montar ni pagar un servidor propio. Firebase da base de datos y autenticación con reglas de seguridad, y el plan gratuito alcanza de sobra para el proyecto.']
     ]
   },
   {
     n: 2,
-    quien: 'Catálogo, carrito y compra',
-    resumen: 'Cómo se muestran los servicios, cómo se calcula el precio con impuesto y cupones, y el recorrido completo de una reserva.',
-    minutos: '1:30 a 3:30, con la demostración en vivo',
-    apartados: ['6', '7'],
+    quien: 'Las páginas, el catálogo y la reserva',
+    resumen: 'Qué contiene cada página, cómo se calcula el precio con impuesto y cupones, y el recorrido completo de una reserva.',
+    minutos: '2:30 a 4:30, con la demostración en vivo',
+    apartados: ['5', '6', '7'],
     enPantalla: [
       'El catálogo con sus filtros y el buscador.',
       'El carrito con el cupón aplicado y el desglose del ISV.',
@@ -62,73 +64,75 @@ const REPARTO = [
       ['¿El carrito se pierde si cierro la página?',
        'No. Queda guardado en el navegador, así que se puede volver más tarde y seguir donde se quedó.'],
       ['¿Se cobra dinero de verdad?',
-       'No. La pasarela está en modo de prueba y así se indica en pantalla. El apartado de límites explica qué haría falta para cobrar realmente.']
+       'No. La pasarela está en modo de prueba y así se indica en pantalla. El último integrante explica qué haría falta para cobrar realmente.']
     ]
   },
   {
     n: 3,
-    quien: 'Cómo está construido',
-    resumen: 'La parte técnica: con qué se hizo, cómo encajan las piezas y cómo se reparten las canchas sin conflictos.',
-    minutos: '3:30 a 5:30',
-    apartados: ['2', '3', '4', '8'],
+    quien: 'Reservas sin conflicto, seguridad y panel',
+    resumen: 'Cómo se reparten las canchas sin choques, quién puede ver y hacer qué, y cómo trabaja el personal.',
+    minutos: '4:30 a 6:30',
+    apartados: ['8', '9', '10'],
     enPantalla: [
-      'El esquema de arquitectura de tu cuadernillo.',
       'El esquema de las tres personas pidiendo la misma hora.',
-      'La estructura de carpetas del proyecto, si hay tiempo.'
+      'Mi cuenta con la sesión de un cliente, mostrando que solo ve sus reservas.',
+      'El panel: cambiar el estado de una reserva y bloquear un horario.'
     ],
     preguntas: [
-      ['¿Por qué no usaron un framework como React o Bootstrap?',
-       'Para catorce páginas no aporta nada y sí agrega complejidad: habría que compilar, actualizar dependencias y cargar código extra. El sitio no descarga ni una librería externa, y por eso carga rápido aunque el internet esté lento.'],
-      ['¿Dónde está el servidor?',
-       'No hay servidor propio. GitHub Pages solo entrega archivos y toda la lógica corre en el navegador; lo que debe quedar guardado viaja a Firebase. Por eso la seguridad vive en las reglas de Firebase.'],
       ['¿Cómo evitan que dos personas reserven la misma hora?',
        'No preguntamos si está libre para después guardar, porque entre esas dos acciones se puede colar alguien. Intentamos crear un documento cuyo nombre ya identifica fecha, hora y cancha, y la base de datos rechaza al segundo que lo intente.'],
       ['¿Y si se cae el internet mientras alguien reserva?',
-       'La reserva no se hace y el sitio lo dice, en vez de entregar un comprobante que nadie tiene registrado. El carrito no se pierde.']
-    ]
-  },
-  {
-    n: 4,
-    quien: 'Seguridad y panel del personal',
-    resumen: 'Quién puede ver y hacer qué, qué se encontró al auditar y cómo trabaja el personal.',
-    minutos: '5:30 a 7:30',
-    apartados: ['9', '10', '11'],
-    enPantalla: [
-      'Mi cuenta con la sesión de un cliente, mostrando que solo ve sus reservas.',
-      'El panel: cambiar el estado de una reserva y bloquear un horario.',
-      'El catálogo después del bloqueo, para ver que esa hora desapareció.'
-    ],
-    preguntas: [
+       'La reserva no se hace y el sitio lo dice, en vez de entregar un comprobante que nadie tiene registrado. El carrito no se pierde.'],
       ['La clave de Firebase se ve en el código, ¿eso no es un riesgo?',
        'Se ve a propósito: así funciona toda aplicación web, porque el navegador necesita esa clave para hablar con el servicio. La seguridad real está en las reglas de Firestore, que se aplican del lado de Google y deciden quién puede leer y escribir cada cosa.'],
       ['¿Dónde se guardan las contraseñas?',
        'En Firebase Authentication, transformadas de forma irreversible. El sitio nunca las ve ni las guarda. Recuperar la contraseña manda un correo con un enlace, así que nadie puede cambiar la clave de otra persona sabiendo su correo.'],
       ['¿Un cliente podría ver las reservas de otro?',
-       'No. Se probó pidiendo esos datos directamente a la base de datos sin sesión y el servidor los rechazó. La restricción no está en el navegador, está en Firebase.'],
-      ['¿Cómo se vuelve administrador alguien?',
-       'Con un documento en la colección de autorizados, que solo se crea desde la consola de Firebase. No hay contraseña de administrador escrita en el código.']
+       'No. Se probó pidiendo esos datos directamente a la base de datos sin sesión y el servidor los rechazó. La restricción no está en el navegador, está en Firebase.']
     ]
   },
   {
-    n: 5,
-    quien: 'Marco legal, pruebas y cierre',
-    resumen: 'Lo que exige la ley y dónde se cumple, cómo se comprueba que funciona y qué quedó fuera.',
-    minutos: '7:30 a 9:30',
-    apartados: ['12', '13', '14', '15', '16'],
+    n: 4,
+    quien: 'El asistente y el marco legal',
+    resumen: 'Cómo responde las dudas frecuentes el sitio, y qué exige la ley hondureña a una tienda en línea.',
+    minutos: '6:30 a 8:00',
+    apartados: ['11', '12'],
     enPantalla: [
-      'Los términos y la política de privacidad del sitio.',
-      'El comprobante de una reserva, con su número.',
-      'Las pruebas corriendo en la terminal, si hay computadora disponible.'
+      'El asistente respondiendo una pregunta escrita a mano.',
+      'Los términos y condiciones, en la parte de cancelaciones.',
+      'El desglose del ISV en el carrito.'
     ],
     preguntas: [
+      ['¿El asistente usa inteligencia artificial?',
+       'No. Son catorce preguntas con sus respuestas escritas a mano. Lo que escribe el visitante se compara con palabras clave y gana la respuesta con más coincidencias; si ninguna coincide, se ofrece WhatsApp.'],
       ['¿El sitio cumple con la ley hondureña de comercio electrónico?',
        'En lo que le corresponde a la plataforma, sí: identifica al comercio, deja constancia de la operación con un número propio, pide consentimiento expreso y desglosa el ISV. Lo que no cumple es la factura fiscal, porque exige la clave de autorización de la SAR.'],
       ['¿Qué pasa con los datos personales de los clientes?',
        'Se pide solo lo necesario (nombre, correo y teléfono), se explica para qué en la política de privacidad, viaja cifrado por HTTPS y las reglas impiden que un cliente vea los datos de otro. Honduras no tiene todavía una ley general de protección de datos, así que se aplicaron los principios internacionales apoyados en el habeas data constitucional.'],
+      ['¿Por qué el descuento se aplica antes del impuesto?',
+       'Porque el impuesto grava el precio efectivamente cobrado. Si se aplicara después, el cliente pagaría ISV sobre un monto que nunca se le cobró.']
+    ]
+  },
+  {
+    n: 5,
+    quien: 'Publicación, pruebas y cierre',
+    resumen: 'Cómo llega el sitio a internet, cómo se comprueba que funciona y qué quedó fuera del proyecto.',
+    minutos: '8:00 a 9:30',
+    apartados: ['13', '14', '15', '16'],
+    enPantalla: [
+      'La dirección del sitio en el navegador, mostrando el candado de HTTPS.',
+      'Cómo se ve el enlace al compartirlo por WhatsApp.',
+      'Las pruebas corriendo en la terminal, si hay computadora disponible.'
+    ],
+    preguntas: [
       ['¿Cómo saben que el sitio funciona bien?',
        'Con veintiuna comprobaciones automáticas que abren el sitio en un navegador real y revisan las cuentas del carrito, la disponibilidad, la reserva, el panel y la interfaz en tres tamaños de pantalla. Se corren con un comando y no tocan la base de datos real.'],
       ['¿Por qué no se cobra dinero de verdad?',
-       'La pasarela está en modo de prueba y se avisa en pantalla. Cobrar exige un contrato con el banco o el procesador y un servidor propio que reciba las notificaciones del pago, que excede el alcance del proyecto.']
+       'La pasarela está en modo de prueba y se avisa en pantalla. Cobrar exige un contrato con el banco o el procesador y un servidor propio que reciba las notificaciones del pago, que excede el alcance del proyecto.'],
+      ['¿Cuánto cuesta mantener el sitio?',
+       'Nada por ahora. GitHub Pages es gratuito y el plan gratuito de Firebase cubre de sobra el volumen del proyecto. Solo habría costo al crecer mucho el número de reservas.'],
+      ['¿Qué pasa si alguien entra sin internet?',
+       'El sitio guarda una página de respaldo con la marca y los enlaces para volver, en vez del error del navegador. El catálogo y el carrito siguen disponibles porque están guardados en el propio navegador.']
     ]
   }
 ];
