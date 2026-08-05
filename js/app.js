@@ -279,6 +279,34 @@
     nav.insertBefore(account, cartLink);
   }
 
+  /* Bajo el logo del pie va el lema y si el centro está abierto en este momento.
+     El horario sale de products.js, así que si cambia el horario del negocio
+     cambia también lo que dice aquí. Lo inyecto desde el código para no repetir
+     lo mismo en las doce páginas. */
+  function injectFooterFirma() {
+    const brand = $(".site-footer .footer-brand");
+    if (!brand || $(".footer-estado")) return;
+
+    const h = new Date().getHours();
+    const abierto = h >= 15 && h < 21;                 // el negocio abre de 3 a 9 PM
+    const detalle = abierto        ? "cierra a las 9:00 PM"
+                  : (h < 15        ? "abre hoy a las 3:00 PM"
+                                   : "abre mañana a las 3:00 PM");
+
+    const caja = document.createElement("div");
+    caja.innerHTML =
+      `<p class="footer-eslogan">${esc(CONFIG.slogan)}</p>
+       <p class="footer-estado ${abierto ? "abierto" : "cerrado"}">
+         <span class="${abierto ? "live-dot" : "dot-off"}" aria-hidden="true"></span>
+         <span><b>${abierto ? "Abierto ahora" : "Cerrado"}</b> · ${esc(detalle)}</span>
+       </p>`;
+
+    // va justo después del logo, antes del texto de presentación
+    const logo = brand.querySelector(".brand");
+    const donde = logo ? logo.nextSibling : brand.firstChild;
+    while (caja.firstChild) brand.insertBefore(caja.firstChild, donde);
+  }
+
   /* El boletín del footer también lo inyecto para no repetirlo 12 veces */
   function injectNewsletter() {
     const brand = $(".site-footer .footer-brand");
@@ -490,6 +518,7 @@
     applyInventory();
     hydrate(document);
     injectNav();
+    injectFooterFirma();
     injectNewsletter();
     // le pongo "active" al enlace de la página en la que estoy parado
     const page = document.body.dataset.page;

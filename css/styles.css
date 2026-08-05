@@ -440,24 +440,57 @@ p { color: var(--text-soft); }
 .page-hero .breadcrumb a, .page-hero .breadcrumb { color: #93aaa0; }
 
 /* el footer */
-.site-footer { background: var(--ink); color: #9fb5ab; padding: 64px 0 30px; }
+.site-footer { position: relative; background: var(--ink); color: #a8bcb3; padding: 64px 0 30px; }
+/* la línea que remata la página: del verde de la grama al lima del logo */
+.site-footer::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--green-dark), var(--green) 45%, var(--lime));
+}
 .footer-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1.2fr; gap: 36px; }
 .footer-brand .brand { margin-bottom: 16px; }
-.footer-brand p { color: #8ba398; font-size: .95rem; max-width: 320px; }
+.footer-brand p { color: #9cb3a9; font-size: .95rem; max-width: 320px; }
+
+/* el lema del negocio, firmado con la barra lima */
+.footer-eslogan {
+  color: #fff; font-size: 1.05rem; font-weight: 700; line-height: 1.4;
+  border-left: 3px solid var(--lime); padding-left: 13px;
+  margin: 0 0 12px; max-width: 300px;
+}
+/* si el centro está abierto ahora mismo; lo calcula js/app.js con el horario */
+.footer-estado { display: flex; align-items: center; font-size: .92rem; margin-bottom: 16px; }
+.footer-estado .live-dot, .footer-estado .dot-off { width: 9px; height: 9px; border-radius: 50%; margin-right: 9px; flex: none; }
+.footer-estado .dot-off { background: #6d857c; }
+.footer-estado.abierto { color: #cfe8d3; }
+.footer-estado b { color: #fff; font-weight: 700; }
+
 .footer-social { display: flex; gap: 10px; margin-top: 18px; }
 .footer-social a { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,.06); display: grid; place-items: center; transition: .15s; }
 .footer-social a:hover { background: var(--green); }
 .footer-social svg { width: 19px; height: 19px; color: #cfe0d8; }
-.site-footer h4 { color: #fff; font-size: .98rem; margin-bottom: 16px; }
+/* los títulos de columna, con el subrayado corto de la marca */
+.site-footer h4 {
+  position: relative; color: #fff; font-size: .82rem; font-weight: 800;
+  letter-spacing: .1em; text-transform: uppercase;
+  margin-bottom: 18px; padding-bottom: 11px;
+}
+.site-footer h4::after { content: ""; position: absolute; left: 0; bottom: 0; width: 24px; height: 2px; background: var(--lime); }
 .footer-links { display: grid; gap: 9px; }
-.footer-links a { color: #9fb5ab; font-size: .94rem; }
-.footer-links a:hover { color: var(--lime); text-decoration: none; }
+.footer-links a { color: #a8bcb3; font-size: .94rem; transition: color .15s var(--ease), transform .15s var(--ease); }
+.footer-links a:hover { color: var(--lime); transform: translateX(3px); text-decoration: none; }
 .footer-contact li { font-size: .94rem; display: flex; gap: 10px; margin-bottom: 11px; }
 .footer-contact svg { width: 18px; height: 18px; color: var(--lime); flex: none; margin-top: 2px; }
 .pay-icons { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-.pay-icons span { background: rgba(255,255,255,.07); border-radius: 7px; padding: 6px 10px; font-size: .72rem; font-weight: 700; color: #cfe0d8; }
-.footer-bottom { border-top: 1px solid rgba(255,255,255,.08); margin-top: 46px; padding-top: 24px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: .85rem; color: #7d958b; }
-.footer-bottom a { color: #9fb5ab; }
+.pay-icons span {
+  background: transparent; border: 1px solid rgba(255,255,255,.16); border-radius: 8px;
+  padding: 7px 11px; font-size: .82rem; font-weight: 700; color: #cfe0d8; letter-spacing: .01em;
+}
+/* el asistente flota fijo en la esquina, así que le dejo ese hueco libre al
+   texto de abajo: si no, el botón le cae encima al final de la página */
+.footer-bottom { border-top: 1px solid rgba(255,255,255,.08); margin-top: 46px; padding-top: 24px; padding-right: 78px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: .85rem; color: #93a9a0; }
+.footer-bottom a { color: #a8bcb3; }
+@media (max-width: 540px) {
+  .footer-bottom { padding-right: 0; padding-bottom: 52px; }
+}
 
 /* el botón flotante de WhatsApp */
 
@@ -533,9 +566,10 @@ p { color: var(--text-soft); }
 /* ============ mejoras de la Fase 3 ============ */
 
 /* boletín del footer */
-.newsletter { margin-top: 18px; }
-.newsletter h4 { color: #fff; font-size: .95rem; margin-bottom: 4px; }
-.newsletter p { font-size: .82rem; margin-bottom: 8px; }
+.newsletter { margin-top: 22px; }
+/* el título del boletín sigue el mismo trato que los de las otras columnas */
+.newsletter h4 { color: #fff; margin-bottom: 14px; }
+.newsletter p { font-size: .88rem; margin-bottom: 10px; }
 .newsletter form { display: flex; gap: 8px; }
 .newsletter input { flex: 1; min-width: 0; padding: 9px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); color: #fff; font: inherit; font-size: .85rem; }
 .newsletter input::placeholder { color: #9ab3aa; }

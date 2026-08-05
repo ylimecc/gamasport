@@ -63,7 +63,9 @@ html { scrollbar-color: var(--green) #0e2630; }
 }
 .hero-ball { transform-box: fill-box; transform-origin: center; animation: ballBob 3.2s var(--ease) infinite; }
 @keyframes ballBob { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-12px) rotate(20deg); } }
-.floating-tag .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #16a34a; margin-right: 6px; box-shadow: 0 0 0 0 rgba(22,163,74,.7); animation: ping 1.6s var(--ease) infinite; vertical-align: middle; }
+/* el puntito que late: en la portada y en el estado del pie de página */
+.floating-tag .live-dot, .footer-estado .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #16a34a; margin-right: 6px; box-shadow: 0 0 0 0 rgba(22,163,74,.7); animation: ping 1.6s var(--ease) infinite; vertical-align: middle; }
+.footer-estado .live-dot { background: var(--green-bright); }
 @keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(22,163,74,.7); } 70%,100% { box-shadow: 0 0 0 10px rgba(22,163,74,0); } }
 
 /* la cinta tipo pantalla LED de estadio */
@@ -146,7 +148,7 @@ html { scrollbar-color: var(--green) #0e2630; }
 /* si el usuario pidió menos animación, se la quito */
 @media (prefers-reduced-motion: reduce) {
   .ticker-mask, .orb, .wa-float, .wa-float::before, .hero-ball, .flood,
-  .floating-tag .live-dot, .hero .eyebrow, .hero h1, .hero-copy > p,
+  .floating-tag .live-dot, .footer-estado .live-dot, .hero .eyebrow, .hero h1, .hero-copy > p,
   .hero .hero-cta, .hero .hero-stats, .hero-card { animation: none !important; }
   .hero .eyebrow, .hero h1, .hero-copy > p, .hero .hero-cta, .hero .hero-stats, .hero-card { opacity: 1 !important; }
   .hero-pitch-lines { stroke-dashoffset: 0 !important; }
