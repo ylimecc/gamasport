@@ -1,29 +1,35 @@
-/* Capa de datos en la nube (Firestore).
+/* Capa de datos en la nube (Firestore), ahora con credencial.
 
-   Idea: el sitio sigue leyendo del navegador como siempre, así nada se
-   bloquea esperando internet. Al cargar la página intento traer los datos
-   de Firestore y actualizo la copia local; cada vez que se guarda algo,
-   lo mando también a la nube sin esperar respuesta.
+   Cada petición viaja con el token de quien está usando el sitio, así que las
+   reglas de firestore.rules deciden qué se puede leer y qué no. El cliente solo
+   alcanza sus propias reservas; el personal las ve todas.
 
-   Si Firebase no está configurado, no responde o falla, el sitio sigue
-   funcionando con los datos del navegador. Nunca se rompe por esto. */
+   Lo único que se lee sin cuenta es la disponibilidad (qué horas están tomadas
+   y cuáles bloqueó el personal), porque el calendario tiene que funcionar antes
+   de que nadie inicie sesión. Ahí no hay datos de ninguna persona.
+
+   El sitio sigue leyendo del navegador para dibujar, igual que antes: lo que
+   baja de la nube se deja en una copia local y las páginas la usan sin esperar.
+   La diferencia está en las reservas: confirmar una reserva sí necesita
+   conexión, porque es la nube la que decide quién gana la hora. */
 (function () {
   "use strict";
 
-  const CFG = window.GS_FIREBASE || {};
-  const ON = !!(CFG.apiKey && CFG.projectId);
-  const BASE = ON ? `https://firestore.googleapis.com/v1/projects/${CFG.projectId}/databases/(default)/documents` : "";
-  const TIMEOUT = 4000;          // si tarda más, seguimos con lo local
+  const CFG  = window.GS_FIREBASE || {};
+  const AUTH = window.GS_AUTH || null;
+  const ON   = !!(CFG.apiKey && CFG.projectId && AUTH);
+  const RAIZ = ON ? `https://firestore.googleapis.com/v1/projects/${CFG.projectId}/databases/(default)/documents` : "";
+  const TIMEOUT = 8000;
 
-  // qué guardamos en la nube y en qué clave del navegador vive cada cosa
-  const MAP = {
-    orders:    { key: "gs_orders_v1", tipo: "lista"  },
-    users:     { key: "gs_users_v1",  tipo: "lista"  },
-    inventory: { key: "gs_inv_v1",    tipo: "objeto" },
-    blocked:   { key: "gs_blocked_v1",tipo: "lista"  }
+  // dónde vive en el navegador la copia de cada cosa
+  const LOCAL = {
+    pedidos:    "gs_orders_v1",
+    inventario: "gs_inv_v1",
+    bloqueos:   "gs_blocked_v1",
+    ocupados:   "gs_ocupados_v1"
   };
 
-  const estado = { activo: ON, sincronizado: false, error: null };
+  const estado = { activo: ON, sincronizado: false, admin: false, error: null };
 
   function conTiempoLimite(promesa, ms) {
     return Promise.race([
@@ -32,77 +38,238 @@
     ]);
   }
 
-  // Firestore guarda campos con tipo; meto el JSON completo en un solo campo de texto
-  async function leer(col) {
-    const r = await conTiempoLimite(fetch(`${BASE}/${col}/datos?key=${CFG.apiKey}`), TIMEOUT);
-    if (r.status === 404) return null;                 // todavía no existe: no es un error
-    if (!r.ok) throw new Error("Firestore respondió " + r.status);
-    const doc = await r.json();
-    const txt = doc && doc.fields && doc.fields.json && doc.fields.json.stringValue;
-    return txt ? JSON.parse(txt) : null;
+  /* Firestore guarda cada campo con su tipo. Aquí solo uso textos, números y
+     sí/no, que es todo lo que necesito: los pedidos completos viajan como un
+     texto JSON en un solo campo. */
+  function aFS(obj) {
+    const fields = {};
+    Object.keys(obj).forEach(k => {
+      const v = obj[k];
+      if (v === null || v === undefined) return;
+      if (typeof v === "number")       fields[k] = Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v };
+      else if (typeof v === "boolean") fields[k] = { booleanValue: v };
+      else                             fields[k] = { stringValue: String(v) };
+    });
+    return { fields };
   }
 
-  async function escribir(col, valor) {
-    const cuerpo = JSON.stringify({ fields: { json: { stringValue: JSON.stringify(valor) } } });
-    const r = await conTiempoLimite(
-      fetch(`${BASE}/${col}/datos?key=${CFG.apiKey}`, {
-        method: "PATCH", headers: { "Content-Type": "application/json" }, body: cuerpo
-      }), TIMEOUT);
-    if (!r.ok) throw new Error("Firestore respondió " + r.status);
-    return true;
+  function deFS(doc) {
+    const o = { _id: (doc.name || "").split("/").pop() };
+    const f = doc.fields || {};
+    Object.keys(f).forEach(k => {
+      const v = f[k];
+      if ("integerValue" in v)      o[k] = parseInt(v.integerValue, 10);
+      else if ("doubleValue" in v)  o[k] = Number(v.doubleValue);
+      else if ("booleanValue" in v) o[k] = v.booleanValue;
+      else                          o[k] = v.stringValue;
+    });
+    return o;
   }
 
-  /* Junta lo que hay en la nube con lo que hay en este navegador, sin perder
-     nada de ninguno de los dos lados. Para las listas uno por su identificador
-     y, si un elemento está en ambos, me quedo con el de la nube porque es el
-     que ya vieron los demás dispositivos. */
-  function fusionar(col, nube, local) {
-    if (col === "inventory") return Object.assign({}, local || {}, nube || {});
-    const a = Array.isArray(nube) ? nube : [];
-    const b = Array.isArray(local) ? local : [];
-    const id = col === "orders"  ? (o => o && o.number)
-             : col === "users"   ? (u => u && u.email)
-             : (x => x && x.fecha + "|" + x.hora);          // horarios bloqueados
-    const vistos = new Set(a.map(id));
-    return a.concat(b.filter(x => !vistos.has(id(x))));
+  // "3:00 PM" queda como "15-00", que sirve de identificador de documento
+  function horaId(hora) {
+    const m = String(hora).match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!m) return String(hora).replace(/[^\w]/g, "-");
+    let h = parseInt(m[1], 10) % 12;
+    if (/pm/i.test(m[3])) h += 12;
+    return String(h).padStart(2, "0") + "-" + m[2];
   }
 
-  /* Al abrir la página: traigo lo de la nube, lo fusiono con lo local y, si el
-     resultado aporta algo que la nube no tenía, lo devuelvo actualizado. */
-  async function bajar() {
+  function slotId(fecha, hora, cancha) {
+    return `${fecha}_${horaId(hora)}_c${cancha}`;
+  }
+
+  async function pedir(url, opciones, conCredencial) {
+    const o = Object.assign({ headers: {} }, opciones || {});
+    o.headers = Object.assign({ "Content-Type": "application/json" }, o.headers);
+    if (conCredencial) {
+      const t = await AUTH.token();
+      if (!t) throw new Error("Tu sesión venció. Vuelve a iniciar sesión.");
+      o.headers.Authorization = "Bearer " + t;
+    }
+    const r = await conTiempoLimite(fetch(url + (url.indexOf("?") < 0 ? "?" : "&") + "key=" + CFG.apiKey, o), TIMEOUT);
+    if (r.status === 404) return null;                       // todavía no existe
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      const e = new Error((d.error && d.error.message) || ("Firestore respondió " + r.status));
+      e.status = r.status;
+      throw e;
+    }
+    return r.json();
+  }
+
+  const leerDoc   = (col, id, cred)  => pedir(`${RAIZ}/${col}/${id}`, { method: "GET" }, cred);
+  const crearDoc  = (col, id, datos) => pedir(`${RAIZ}/${col}?documentId=${encodeURIComponent(id)}`,
+                                              { method: "POST", body: JSON.stringify(aFS(datos)) }, true);
+  const grabarDoc = (col, id, datos) => pedir(`${RAIZ}/${col}/${id}`,
+                                              { method: "PATCH", body: JSON.stringify(aFS(datos)) }, true);
+  const borrarDoc = (col, id)        => pedir(`${RAIZ}/${col}/${id}`, { method: "DELETE" }, true);
+
+  /* Consulta de colección. Con filtro, Firestore comprueba que la consulta no
+     pueda devolver documentos ajenos: por eso los pedidos siempre se piden
+     filtrando por uid, salvo que quien pregunte sea del personal. */
+  async function consultar(col, filtro, cred) {
+    const query = { from: [{ collectionId: col }], limit: 500 };
+    if (filtro) {
+      query.where = {
+        fieldFilter: {
+          field: { fieldPath: filtro.campo },
+          op: filtro.op || "EQUAL",
+          value: { stringValue: String(filtro.valor) }
+        }
+      };
+      if ((filtro.op || "EQUAL") !== "EQUAL") query.orderBy = [{ field: { fieldPath: filtro.campo } }];
+    }
+    const d = await pedir(`${RAIZ}:runQuery`, {
+      method: "POST", body: JSON.stringify({ structuredQuery: query })
+    }, cred);
+    if (!Array.isArray(d)) return [];
+    return d.filter(x => x.document).map(x => deFS(x.document));
+  }
+
+  function guardarLocal(clave, valor) {
+    try { localStorage.setItem(clave, JSON.stringify(valor)); } catch (e) {}
+  }
+
+  const hoyISO = () => new Date().toISOString().slice(0, 10);
+
+  /* ---------- lo que se baja al abrir cualquier página ---------- */
+
+  // disponibilidad: pública, sin datos de nadie, y solo de hoy en adelante
+  async function bajarDisponibilidad() {
+    const desde = hoyISO();
+    const [ocupados, bloqueos] = await Promise.all([
+      consultar("ocupados", { campo: "fecha", op: "GREATER_THAN_OR_EQUAL", valor: desde }, false).catch(() => null),
+      consultar("bloqueos", { campo: "fecha", op: "GREATER_THAN_OR_EQUAL", valor: desde }, false).catch(() => null)
+    ]);
+    if (ocupados) guardarLocal(LOCAL.ocupados, ocupados.map(o => ({ fecha: o.fecha, hora: o.hora, cancha: o.cancha })));
+    if (bloqueos) guardarLocal(LOCAL.bloqueos, bloqueos.map(b => ({ fecha: b.fecha, hora: b.hora })));
+  }
+
+  // precios y cupos que el personal haya cambiado
+  async function bajarInventario() {
+    const d = await leerDoc("config", "inventario", false).catch(() => null);
+    if (!d) return;
+    const o = deFS(d);
+    try { guardarLocal(LOCAL.inventario, JSON.parse(o.json || "{}")); } catch (e) {}
+  }
+
+  // mis reservas (o todas, si soy del personal)
+  async function bajarPedidos() {
+    if (!AUTH.sesion()) { guardarLocal(LOCAL.pedidos, []); return; }
+    const filtro = estado.admin ? null : { campo: "uid", valor: AUTH.uid() };
+    const docs = await consultar("pedidos", filtro, true).catch(() => null);
+    if (!docs) return;
+    const pedidos = docs.map(d => {
+      let o = null;
+      try { o = JSON.parse(d.json); } catch (e) { return null; }
+      o.estado = d.estado || o.estado || "pendiente";
+      return o;
+    }).filter(Boolean);
+    pedidos.sort((a, b) => String(b.dateISO).localeCompare(String(a.dateISO)));
+    guardarLocal(LOCAL.pedidos, pedidos);
+  }
+
+  /* Averigua si quien entró es del personal. Lo decide Firestore: existe o no
+     existe el documento admins/<uid>, y esa colección no se puede escribir
+     desde el sitio. */
+  async function comprobarAdmin() {
+    estado.admin = false;
+    if (!AUTH.entrado()) return false;
+    try {
+      const d = await leerDoc("admins", AUTH.uid(), true);
+      estado.admin = !!d;
+    } catch (e) { estado.admin = false; }
+    return estado.admin;
+  }
+
+  async function sincronizar() {
     if (!ON) return false;
     try {
-      const cols = Object.keys(MAP);
-      const datos = await Promise.all(cols.map(c => leer(c).catch(() => undefined)));
-      let alguno = false;
-      cols.forEach((col, i) => {
-        const enNube = datos[i];
-        if (enNube === undefined) return;                // no se pudo leer: dejo lo local
-        let enLocal = null;
-        try { enLocal = JSON.parse(localStorage.getItem(MAP[col].key)); } catch (e) {}
-        const unido = fusionar(col, enNube, enLocal);
-        localStorage.setItem(MAP[col].key, JSON.stringify(unido));
-        alguno = true;
-        // si el navegador tenía algo que la nube no, lo subo para que se empareje
-        if (JSON.stringify(unido) !== JSON.stringify(enNube || (MAP[col].tipo === "lista" ? [] : {}))) subir(col);
-      });
+      await comprobarAdmin();
+      await Promise.all([bajarDisponibilidad(), bajarInventario(), bajarPedidos()]);
       estado.sincronizado = true;
-      return alguno;
+      estado.error = null;
+      return true;
     } catch (e) {
       estado.error = e.message;
-      return false;                                    // seguimos con lo local
+      return false;
     }
   }
 
-  /* Cuando algo cambia en el navegador, lo subo. No espero la respuesta:
-     si falla, el dato ya quedó guardado localmente. */
-  function subir(col) {
-    if (!ON || !MAP[col]) return;
-    let valor;
-    try { valor = JSON.parse(localStorage.getItem(MAP[col].key) || (MAP[col].tipo === "lista" ? "[]" : "{}")); }
-    catch (e) { return; }
-    escribir(col, valor).catch(e => { estado.error = e.message; });
+  /* ---------- escrituras ---------- */
+
+  /* Aparta una cancha para esa fecha y hora. El identificador del documento es
+     fecha_hora_cancha: si dos personas confirman al mismo tiempo, la segunda
+     choca con un documento que ya existe (error 409) y se le ofrece la otra
+     cancha. Cuando ya no queda ninguna, la hora está llena de verdad. */
+  async function apartarHora(fecha, hora, canchas) {
+    const total = Math.max(1, canchas || 1);
+    for (let n = 1; n <= total; n++) {
+      try {
+        await crearDoc("ocupados", slotId(fecha, hora, n), {
+          fecha: fecha, hora: hora, cancha: String(n), creado: new Date().toISOString()
+        });
+        return n;
+      } catch (e) {
+        if (e.status === 409) continue;                      // esa cancha ya estaba tomada
+        throw e;
+      }
+    }
+    return 0;
   }
 
-  window.GS_CLOUD = { activo: ON, estado, bajar, subir };
+  async function crearPedido(order) {
+    await crearDoc("pedidos", order.number, {
+      uid: AUTH.uid(),
+      json: JSON.stringify(order),
+      fecha: order.reserva.fecha,
+      estado: "pendiente",
+      creado: order.dateISO
+    });
+    return true;
+  }
+
+  async function guardarPerfil(nombre, email) {
+    if (!AUTH.entrado()) return;
+    await grabarDoc("usuarios", AUTH.uid(), {
+      nombre: nombre || "", email: (email || "").toLowerCase(), creado: new Date().toISOString()
+    });
+  }
+
+  /* ---------- solo personal (las reglas lo vuelven a comprobar) ---------- */
+
+  async function cambiarEstadoPedido(numero, nuevo) {
+    const d = await leerDoc("pedidos", numero, true);
+    if (!d) throw new Error("Ese pedido ya no existe.");
+    const actual = deFS(d);
+    let o = {};
+    try { o = JSON.parse(actual.json); } catch (e) {}
+    o.estado = nuevo;
+    await grabarDoc("pedidos", numero, {
+      uid: actual.uid, json: JSON.stringify(o), fecha: actual.fecha, estado: nuevo, creado: actual.creado
+    });
+    // al cancelar, la hora vuelve a quedar libre
+    if (nuevo === "cancelada" && o.reserva) {
+      const c = o.reserva.cancha || 1;
+      await borrarDoc("ocupados", slotId(o.reserva.fecha, o.reserva.hora, c)).catch(() => {});
+    }
+    return true;
+  }
+
+  const guardarInventario = (obj) => grabarDoc("config", "inventario", { json: JSON.stringify(obj || {}) });
+
+  const bloquearHora   = (fecha, hora) => crearDoc("bloqueos", `${fecha}_${horaId(hora)}`, { fecha, hora })
+                                            .catch(e => { if (e.status !== 409) throw e; });
+  const liberarHora    = (fecha, hora) => borrarDoc("bloqueos", `${fecha}_${horaId(hora)}`);
+  const listarUsuarios = () => consultar("usuarios", null, true);
+
+  window.GS_CLOUD = {
+    activo: ON, estado,
+    sincronizar, comprobarAdmin,
+    apartarHora, crearPedido, guardarPerfil,
+    cambiarEstadoPedido, guardarInventario, bloquearHora, liberarHora, listarUsuarios,
+    esAdmin: () => estado.admin,
+    horaId, slotId
+  };
 })();

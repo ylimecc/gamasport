@@ -1,0 +1,101 @@
+rules_version = '2';
+
+/* Reglas de seguridad de Firestore para GamaSport.
+
+   Idea de fondo: la clave del proyecto (js/firebase-config.js) es pública y
+   cualquiera puede verla, así que la seguridad real vive aquí. Cada quien entra
+   con su cuenta y solo alcanza lo suyo; el personal se identifica por tener un
+   documento en la colección "admins", que se crea a mano desde la consola.
+
+   Lo único público es la disponibilidad de horarios, que no lleva datos de
+   nadie: solo fecha, hora y número de cancha. */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function autenticado() {
+      return request.auth != null;
+    }
+
+    function esDueno(uid) {
+      return autenticado() && request.auth.uid == uid;
+    }
+
+    /* El personal de GamaSport. El documento se crea a mano en la consola de
+       Firebase (colección "admins", id = UID de la cuenta). Nadie puede
+       escribirlo desde el sitio, ni siquiera un administrador. */
+    function esAdmin() {
+      return autenticado() &&
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    match /admins/{uid} {
+      allow get: if esDueno(uid);
+      allow list, create, update, delete: if false;
+    }
+
+    /* Perfil del cliente: su nombre y su correo. Lo ve el mismo cliente y el
+       personal; nadie más. */
+    match /usuarios/{uid} {
+      allow get: if esDueno(uid) || esAdmin();
+      allow list: if esAdmin();
+      allow create, update: if esDueno(uid)
+                            && request.resource.data.keys().hasOnly(['nombre', 'email', 'creado'])
+                            && request.resource.data.nombre is string
+                            && request.resource.data.nombre.size() <= 80;
+      allow delete: if esAdmin();
+    }
+
+    /* Reservas. Cada pedido lleva el uid de quien lo hizo: el cliente ve los
+       suyos y el personal los ve todos. Una consulta sin el filtro
+       "uid == mi uid" la rechaza Firestore antes de devolver nada.
+
+       El cliente crea su pedido pero no puede modificarlo después: cambiar el
+       estado (confirmada, atendida, cancelada) es cosa del personal. */
+    match /pedidos/{numero} {
+      allow get, list: if esAdmin() || (autenticado() && resource.data.uid == request.auth.uid);
+      allow create: if autenticado()
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.keys().hasOnly(['uid', 'json', 'fecha', 'estado', 'creado'])
+                    && request.resource.data.estado == 'pendiente'
+                    && request.resource.data.json is string
+                    && request.resource.data.json.size() <= 20000;
+      allow update, delete: if esAdmin();
+    }
+
+    /* Horas ya tomadas. Es lo único que se lee sin cuenta, porque el calendario
+       tiene que poder mostrar qué está libre antes de que alguien inicie sesión.
+       No guarda de quién es la reserva.
+
+       El identificador del documento es fecha_hora_cancha, así que dos personas
+       que intenten la misma hora chocan en el mismo id y solo la primera lo
+       crea: esa es la garantía de que no se reserva dos veces la misma cancha. */
+    match /ocupados/{slot} {
+      allow get, list: if true;
+      allow create: if autenticado()
+                    && request.resource.data.keys().hasOnly(['fecha', 'hora', 'cancha', 'creado'])
+                    && request.resource.data.fecha is string
+                    && request.resource.data.hora is string;
+      allow update, delete: if esAdmin();
+    }
+
+    /* Horarios que el personal bloquea (mantenimiento, ligas, eventos) y los
+       precios y cupos del catálogo. Los lee cualquiera porque salen en el
+       sitio; los cambia solo el personal. */
+    match /bloqueos/{id} {
+      allow get, list: if true;
+      allow create, update, delete: if esAdmin();
+    }
+
+    match /config/{doc} {
+      allow get, list: if true;
+      allow create, update, delete: if esAdmin();
+    }
+
+    /* Todo lo demás queda cerrado, incluidas las colecciones de la versión
+       anterior (users, orders, inventory, blocked), que ya no se usan. */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

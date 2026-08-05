@@ -14,8 +14,23 @@
 
   const COUPONS = { "GAMA10": 0.10, "EQUIPO15": 0.15, "SEMANA15": 0.15 };
 
-  // sube a la nube lo que acabo de guardar; si no hay nube configurada, no hace nada
-  function nube(col) { if (window.GS_CLOUD && window.GS_CLOUD.activo) window.GS_CLOUD.subir(col); }
+  /* La capa de datos en la nube vive en js/cloud.js. Si no está configurada,
+     estas respuestas de repuesto dejan que el sitio se siga navegando, pero
+     avisan al intentar reservar: una reserva a medias es peor que un error
+     claro. */
+  const Nube = (window.GS_CLOUD && window.GS_CLOUD.activo) ? window.GS_CLOUD : {
+    apartarHora:         async () => 1,
+    crearPedido:         async () => { throw new Error("El sistema de reservas no está disponible en este momento."); },
+    guardarPerfil:       async () => {},
+    cambiarEstadoPedido: async () => { throw new Error("No hay conexión con la base de datos."); },
+    guardarInventario:   async () => {},
+    bloquearHora:        async () => {},
+    liberarHora:         async () => {},
+    listarUsuarios:      async () => [],
+    sincronizar:         async () => false,
+    comprobarAdmin:      async () => false,
+    esAdmin:             () => false
+  };
 
   function waLink(msg) {
     const text = encodeURIComponent(msg || `¡Hola ${CONFIG.name}! Quisiera información para reservar.`);
@@ -84,74 +99,79 @@
     }
   };
 
-  /* Cuentas de usuario. Para la demo las guardo en el localStorage;
-     el siguiente paso natural sería moverlas a Firebase Authentication. */
+  /* Cuentas de usuario. La contraseña ya no vive aquí: la guarda y la verifica
+     Firebase Authentication (js/auth.js). Este objeto es solo la cara que usa
+     el resto del sitio, para no cambiar cómo se dibujan las páginas. */
+  const A = window.GS_AUTH || null;
+  const ALTA = "gs_alta_v2";        // cuándo se creó la cuenta en este navegador
+
   const Auth = {
-    UKEY: "gs_users_v1",
-    SKEY: "gs_session_v1",
-    // codificación simple para no guardar la clave tal cual (es una demo, no producción)
-    code(s) { let h = 7; for (let i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) >>> 0; } return "u" + h.toString(16); },
-    users() { try { return JSON.parse(localStorage.getItem(this.UKEY)) || []; } catch (e) { return []; } },
-    saveUsers(list) { localStorage.setItem(this.UKEY, JSON.stringify(list)); nube("users"); },
-    find(email) { return this.users().find(u => u.email === (email || "").trim().toLowerCase()) || null; },
-    register(nombre, email, pass) {
-      email = (email || "").trim().toLowerCase();
-      if (nombre.trim().length < 3) return "Escribe tu nombre completo.";
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return "El correo no es válido.";
-      if (pass.length < 6) return "La contraseña debe tener al menos 6 caracteres.";
-      if (this.find(email)) return "Ya existe una cuenta con ese correo.";
-      const list = this.users();
-      list.push({ nombre: nombre.trim(), email, pass: this.code(pass), creado: new Date().toISOString() });
-      this.saveUsers(list);
-      this.setSession(email);
+    current() {
+      const s = A && A.sesion();
+      if (!s || s.anonimo) return null;
+      return { nombre: s.nombre || s.email.split("@")[0], email: s.email, creado: localStorage.getItem(ALTA) };
+    },
+    async register(nombre, email, pass) {
+      if (!A) return "Las cuentas no están disponibles en este momento.";
+      const err = await A.registrar(nombre, email, pass);
+      if (err) return err;
+      localStorage.setItem(ALTA, new Date().toISOString());
+      // el perfil se guarda aparte para que el personal pueda ver quién reservó
+      try { await Nube.guardarPerfil(nombre, email); } catch (e) {}
       return null;
     },
-    login(email, pass) {
-      const u = this.find(email);
-      if (!u || u.pass !== this.code(pass)) return "Correo o contraseña incorrectos.";
-      this.setSession(u.email);
-      return null;
+    async login(email, pass) {
+      if (!A) return "Las cuentas no están disponibles en este momento.";
+      return A.entrar(email, pass);
     },
-    reset(email, pass) {
-      const u = this.find(email);
-      if (!u) return "No hay ninguna cuenta con ese correo.";
-      if (pass.length < 6) return "La contraseña nueva debe tener al menos 6 caracteres.";
-      u.pass = this.code(pass);
-      this.saveUsers(this.users().map(x => x.email === u.email ? u : x));
-      return null;
+    // Firebase manda el correo con el enlace: ya nadie puede cambiar la clave de otro
+    async recover(email) {
+      if (!A) return "Las cuentas no están disponibles en este momento.";
+      return A.recuperar(email);
     },
-    setSession(email) { localStorage.setItem(this.SKEY, email); },
-    current() { const e = localStorage.getItem(this.SKEY); return e ? this.find(e) : null; },
-    logout() { localStorage.removeItem(this.SKEY); }
+    logout() {
+      if (A) A.salir();
+      localStorage.removeItem(Orders.KEY);      // las reservas se vuelven a bajar al entrar
+      localStorage.removeItem(ALTA);
+    }
   };
 
-  /* Historial de reservas. Cada pedido confirmado se agrega a la lista
-     para poder verlo en Mi cuenta y en el panel administrativo. */
+  /* Historial de reservas. Lo que hay aquí es la copia local de lo que devolvió
+     Firestore: para un cliente, sus propias reservas; para el personal, todas. */
   const Orders = {
     KEY: "gs_orders_v1",
     all() { try { return JSON.parse(localStorage.getItem(this.KEY)) || []; } catch (e) { return []; } },
-    add(order) { const l = this.all(); l.unshift(order); localStorage.setItem(this.KEY, JSON.stringify(l)); nube("orders"); },
-    setStatus(number, estado) {
-      const l = this.all().map(o => o.number === number ? { ...o, estado } : o);
-      localStorage.setItem(this.KEY, JSON.stringify(l));
-      nube("orders");
+    guardar(l) { localStorage.setItem(this.KEY, JSON.stringify(l)); },
+    // confirmar una reserva necesita conexión: es la nube la que reparte las horas
+    async add(order) {
+      await Nube.crearPedido(order);
+      const l = this.all(); l.unshift(order); this.guardar(l);
+    },
+    async setStatus(number, estado) {
+      await Nube.cambiarEstadoPedido(number, estado);
+      this.guardar(this.all().map(o => o.number === number ? { ...o, estado } : o));
     },
     byEmail(email) { return this.all().filter(o => o.customer && o.customer.email === email); }
   };
 
-  /* Inventario. El administrador puede cambiar precio, cupos disponibles y si el
+  /* Inventario. El personal puede cambiar precio, cupos disponibles y si el
      servicio se muestra o no; esos cambios se guardan aparte y se aplican encima
      de la lista base de products.js, así el catálogo original nunca se pierde. */
   const Inventory = {
     KEY: "gs_inv_v1",
     all() { try { return JSON.parse(localStorage.getItem(this.KEY)) || {}; } catch (e) { return {}; } },
-    set(id, patch) {
+    async set(id, patch) {
       const o = this.all();
       o[id] = Object.assign({}, o[id] || {}, patch);
       localStorage.setItem(this.KEY, JSON.stringify(o));
-      applyInventory(); nube("inventory");
+      applyInventory();
+      await Nube.guardarInventario(o);
     },
-    reset() { localStorage.removeItem(this.KEY); applyInventory(); nube("inventory"); }
+    async reset() {
+      localStorage.removeItem(this.KEY);
+      applyInventory();
+      await Nube.guardarInventario({});
+    }
   };
 
   function applyInventory() {
@@ -173,19 +193,41 @@
     return { txt: "Disponible", cls: "si" };
   }
 
-  /* Horarios bloqueados por el administrador (mantenimiento, ligas privadas, etc.) */
+  /* Horarios bloqueados por el personal (mantenimiento, ligas privadas, etc.) */
   const Blocked = {
     KEY: "gs_blocked_v1",
     all() { try { return JSON.parse(localStorage.getItem(this.KEY)) || []; } catch (e) { return []; } },
-    add(fecha, hora) { const l = this.all(); if (!l.find(b => b.fecha === fecha && b.hora === hora)) { l.push({ fecha, hora }); localStorage.setItem(this.KEY, JSON.stringify(l)); nube("blocked"); } },
-    remove(fecha, hora) { localStorage.setItem(this.KEY, JSON.stringify(this.all().filter(b => !(b.fecha === fecha && b.hora === hora)))); nube("blocked"); }
+    async add(fecha, hora) {
+      await Nube.bloquearHora(fecha, hora);
+      const l = this.all();
+      if (!l.find(b => b.fecha === fecha && b.hora === hora)) l.push({ fecha, hora });
+      localStorage.setItem(this.KEY, JSON.stringify(l));
+    },
+    async remove(fecha, hora) {
+      await Nube.liberarHora(fecha, hora);
+      localStorage.setItem(this.KEY, JSON.stringify(this.all().filter(b => !(b.fecha === fecha && b.hora === hora))));
+    }
   };
 
-  // horas que ya no se pueden reservar en una fecha (reservas hechas aquí + bloqueos del admin)
+  /* Horas ya tomadas, según la copia local de la colección pública "ocupados".
+     No dice quién reservó, solo qué cancha está apartada a qué hora. */
+  const Ocupados = {
+    KEY: "gs_ocupados_v1",
+    all() { try { return JSON.parse(localStorage.getItem(this.KEY)) || []; } catch (e) { return []; } }
+  };
+
+  /* Una hora deja de estar disponible cuando todas las canchas de ese horario
+     están apartadas, o cuando el personal bloqueó la hora completa. */
   function busySlots(fecha) {
-    const res = Orders.all().filter(o => o.reserva && o.reserva.fecha === fecha && o.estado !== "cancelada").map(o => o.reserva.hora);
+    const canchas = Math.max(1, CONFIG.canchas || 1);
+    const cuenta = {};
+    Ocupados.all().forEach(o => {
+      if (o.fecha !== fecha) return;
+      cuenta[o.hora] = (cuenta[o.hora] || 0) + 1;
+    });
+    const llenas = Object.keys(cuenta).filter(h => cuenta[h] >= canchas);
     const blk = Blocked.all().filter(b => b.fecha === fecha).map(b => b.hora);
-    return res.concat(blk);
+    return llenas.concat(blk);
   }
 
   /* lo que aparece en todas las páginas: el numerito del carrito, el menú y el footer */
@@ -980,21 +1022,51 @@
         items: lines.map(l => ({ id: l.id, name: l.name, qty: l.qty, price: l.price, unit: l.unit, lineTotal: l.lineTotal })),
         totals: t
       };
-      function finish() {
-        localStorage.setItem("gs_last_order", JSON.stringify(order));
-        Orders.add(order);
-        Cart.clear();
-        location.href = "confirmacion.html";
+      const boton = form.querySelector('button[type="submit"]');
+      const textoBoton = boton.innerHTML;
+      function trabajando(si) {
+        boton.disabled = si;
+        boton.innerHTML = si ? "Confirmando tu reserva…" : textoBoton;
       }
+
+      /* Confirmar de verdad. Primero aparto la cancha en la nube, que es donde
+         se resuelve quién gana la hora si dos personas confirman al mismo
+         tiempo, y solo si eso salió bien guardo el pedido. Si no hay conexión
+         la reserva no se hace: prefiero decirlo a que el cliente llegue a la
+         cancha con una reserva que nadie tiene. */
+      async function confirmar() {
+        trabajando(true);
+        try {
+          if (window.GS_AUTH && !window.GS_AUTH.sesion()) await window.GS_AUTH.invitado();
+          const cancha = await Nube.apartarHora(order.reserva.fecha, order.reserva.hora, CONFIG.canchas);
+          if (!cancha) {
+            trabajando(false);
+            refreshSlots();
+            setErr("hora", true);
+            showToast("Alguien acaba de tomar esa hora. Elige otra, por favor.");
+            return;
+          }
+          order.reserva.cancha = cancha;
+          await Orders.add(order);
+          localStorage.setItem("gs_last_order", JSON.stringify(order));
+          Cart.clear();
+          location.href = "confirmacion.html";
+        } catch (err) {
+          trabajando(false);
+          showToast("No pudimos confirmar la reserva. " + (err && err.message ? err.message : "Revisa tu conexión e intenta de nuevo."),
+                    "Escribir por WhatsApp", waLink("¡Hola GamaSport! Tuve un problema al confirmar mi reserva en el sitio."));
+        }
+      }
+
       if (pago === "PayPal Sandbox") {
         // simulo el salto a PayPal: overlay azul un momento y de regreso con el pago aprobado
         const ov = document.createElement("div");
         ov.className = "pay-overlay";
         ov.innerHTML = `<div class="pay-overlay-card"><div class="pp-logo">Pay<span>Pal</span> <em>SANDBOX</em></div><div class="pp-spin"></div><p>Procesando el pago de prueba…</p></div>`;
         document.body.appendChild(ov);
-        setTimeout(finish, 1600);
+        setTimeout(() => { ov.remove(); confirmar(); }, 1600);
       } else {
-        finish();
+        confirmar();
       }
     });
   }
@@ -1141,10 +1213,9 @@
             <button class="btn btn--primary btn--block">${icon("plus")} Crear mi cuenta</button>
           </form>
           <form class="auth-form" id="resetForm" data-view="reset" hidden>
-            <p class="auth-note">Por seguridad, confirma tu correo y define una contraseña nueva.</p>
+            <p class="auth-note">Escribe tu correo y te enviamos un enlace para poner una contraseña nueva.</p>
             <div class="field"><label>Correo electrónico</label><input name="email" type="email" required></div>
-            <div class="field"><label>Contraseña nueva</label><input name="pass" type="password" required></div>
-            <button class="btn btn--primary btn--block">Restablecer</button>
+            <button class="btn btn--primary btn--block">Enviarme el enlace</button>
           </form>
           <p class="auth-msg" id="authMsg" role="alert"></p>
           <p class="auth-note">Con tu cuenta reservas más rápido y llevas el control de tus partidos.</p>
@@ -1157,75 +1228,104 @@
         msg.textContent = "";
       }));
       const val = (f, n) => (f.querySelector(`[name="${n}"]`) || {}).value || "";
-      $("#loginForm").addEventListener("submit", (e) => {
+      // las tres operaciones hablan con Firebase, así que bloqueo el botón mientras responde
+      const conEspera = (form, aviso, fn) => form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const err = Auth.login(val(e.target, "email"), val(e.target, "pass"));
+        const btn = form.querySelector("button");
+        btn.disabled = true;
+        msg.textContent = aviso;
+        try { await fn(e.target); } finally { btn.disabled = false; }
+      });
+
+      conEspera($("#loginForm"), "Entrando…", async (f) => {
+        const err = await Auth.login(val(f, "email"), val(f, "pass"));
         if (err) { msg.textContent = err; return; }
         location.reload();
       });
-      $("#signupForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const err = Auth.register(val(e.target, "nombre"), val(e.target, "email"), val(e.target, "pass"));
+      conEspera($("#signupForm"), "Creando tu cuenta…", async (f) => {
+        const err = await Auth.register(val(f, "nombre"), val(f, "email"), val(f, "pass"));
         if (err) { msg.textContent = err; return; }
         showToast("¡Cuenta creada! Bienvenido a GamaSport.");
         setTimeout(() => location.reload(), 600);
       });
-      $("#resetForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const err = Auth.reset(val(e.target, "email"), val(e.target, "pass"));
-        msg.textContent = err || "Contraseña actualizada. Ya puedes iniciar sesión.";
+      conEspera($("#resetForm"), "Enviando el enlace…", async (f) => {
+        const err = await Auth.recover(val(f, "email"));
+        // si el correo no tiene cuenta digo lo mismo, para no confirmar quién está registrado
+        msg.textContent = err || "Si ese correo tiene cuenta, ya va en camino el enlace para cambiar la contraseña.";
       });
       return;
     }
 
-    const mine = Orders.byEmail(user.email);
+    // la copia local ya trae solo las reservas de esta cuenta: el filtro lo hizo Firestore
+    const mine = Orders.all();
     root.innerHTML = `
       <div class="account-head">
         <div class="avatar avatar--lg">${esc(user.nombre.trim().slice(0, 1).toUpperCase())}</div>
         <div>
           <h2>Hola, ${esc(user.nombre.split(" ")[0])}</h2>
-          <p>${esc(user.email)} · miembro desde ${new Date(user.creado).toLocaleDateString("es-HN")}</p>
+          <p>${esc(user.email)}${user.creado ? " · miembro desde " + esc(new Date(user.creado).toLocaleDateString("es-HN")) : ""}</p>
         </div>
         <button class="btn btn--ghost btn--sm" id="logoutBtn">${icon("logout")} Cerrar sesión</button>
       </div>
       <h3 id="reservas" class="account-sub">Mis reservas</h3>
       ${ordersTable(mine)}
-      <p class="auth-note" style="margin-top:14px">${icon("info")} Aquí aparecen las reservas hechas con tu correo.</p>`;
+      <p class="auth-note" style="margin-top:14px">${icon("info")} Aquí aparecen las reservas de tu cuenta, incluidas las que hiciste como invitado en este navegador antes de registrarte.</p>`;
     $("#logoutBtn").addEventListener("click", () => { Auth.logout(); location.reload(); });
     hydrate(root); revealOnScroll();
   }
 
-  /* ---- panel administrativo (demo protegida con credenciales fijas) ---- */
-  const ADMIN_MAIL = "admin@gamasport.hn";
-  const ADMIN_PASS = "gamasport2026";
-
+  /* ---- panel administrativo ---- */
+  /* Ya no hay contraseña escrita en el código. Se entra con una cuenta normal de
+     Firebase y el permiso lo da Firestore: el documento admins/<uid> existe o no
+     existe, y solo se crea desde la consola de Firebase. Aunque alguien se
+     dibujara esta pantalla a mano, las reglas rechazan cualquier cambio. */
   function initAdmin() {
     const root = $("#adminRoot");
     if (!root) return;
+    let usuarios = [];
 
-    if (sessionStorage.getItem("gs_admin") !== "1") {
+    if (Nube.esAdmin()) cargar();
+    else pedirAcceso();
+
+    async function cargar() {
+      usuarios = await Nube.listarUsuarios().catch(() => []);
+      render();
+    }
+
+    function pedirAcceso(aviso) {
+      const s = Auth.current();
       root.innerHTML = `
         <div class="auth-card">
           <h2 style="margin-bottom:6px">Panel administrativo</h2>
           <p class="auth-note">Acceso solo para el personal de GamaSport.</p>
+          ${s ? `<p class="auth-note">Tienes la sesión de ${esc(s.email)}, que no es una cuenta del personal.</p>` : ""}
           <form class="auth-form" id="adminForm">
-            <div class="field"><label>Correo</label><input name="email" type="email" required placeholder="admin@gamasport.hn"></div>
-            <div class="field"><label>Contraseña</label><input name="pass" type="password" required></div>
+            <div class="field"><label>Correo</label><input name="email" type="email" required autocomplete="username"></div>
+            <div class="field"><label>Contraseña</label><input name="pass" type="password" required autocomplete="current-password"></div>
             <button class="btn btn--primary btn--block">${icon("lock")} Entrar al panel</button>
           </form>
-          <p class="auth-msg" id="adminMsg" role="alert"></p>
-          <p class="auth-note">Demo académica: admin@gamasport.hn / gamasport2026</p>
+          <p class="auth-msg" id="adminMsg" role="alert">${esc(aviso || "")}</p>
         </div>`;
-      $("#adminForm").addEventListener("submit", (e) => {
+      $("#adminForm").addEventListener("submit", async (e) => {
         e.preventDefault();
-        const em = e.target.querySelector('[name="email"]').value.trim().toLowerCase();
+        const btn = e.target.querySelector("button");
+        const msg = $("#adminMsg");
+        btn.disabled = true; msg.textContent = "Comprobando…";
+        const em = e.target.querySelector('[name="email"]').value;
         const pw = e.target.querySelector('[name="pass"]').value;
-        if (em === ADMIN_MAIL && pw === ADMIN_PASS) { sessionStorage.setItem("gs_admin", "1"); render(); }
-        else { $("#adminMsg").textContent = "Credenciales incorrectas."; }
+        const err = await Auth.login(em, pw);
+        if (err) { btn.disabled = false; msg.textContent = err; return; }
+        const ok = await Nube.comprobarAdmin();
+        if (!ok) {
+          Auth.logout();
+          btn.disabled = false;
+          msg.textContent = "Esa cuenta no tiene permisos de administrador.";
+          return;
+        }
+        await Nube.sincronizar();          // ahora sí bajan todas las reservas
+        cargar();
       });
-      return;
     }
-    render();
 
     function render() {
       const orders = Orders.all();
@@ -1244,7 +1344,7 @@
           <div class="stat"><div class="num">${money(ingresos)}</div><div class="lbl">Ingresos registrados</div></div>
           <div class="stat"><div class="num">${bloqueos.length}</div><div class="lbl">Horarios bloqueados</div></div>
           <div class="stat"><div class="num">${PRODUCTS.filter(p => p.activo !== false && p.stock).length}/${PRODUCTS.length}</div><div class="lbl">Servicios disponibles</div></div>
-          <div class="stat"><div class="num">${Auth.users().length}</div><div class="lbl">Usuarios registrados</div></div>
+          <div class="stat"><div class="num">${usuarios.length}</div><div class="lbl">Usuarios registrados</div></div>
         </div>
 
         <h3 class="account-sub">Reservas</h3>
@@ -1277,14 +1377,13 @@
 
         <h3 class="account-sub">Usuarios registrados</h3>
         ${(function () {
-          const us = Auth.users();
-          if (!us.length) return `<div class="empty-state">${icon("user")}<h3>Todavía no hay usuarios</h3><p>Las cuentas creadas desde "Mi cuenta" aparecerán aquí.</p></div>`;
+          if (!usuarios.length) return `<div class="empty-state">${icon("user")}<h3>Todavía no hay usuarios</h3><p>Las cuentas creadas desde "Mi cuenta" aparecerán aquí.</p></div>`;
           return `<div class="orders-wrap"><table class="orders-table">
             <thead><tr><th>Nombre</th><th>Correo</th><th>Registro</th><th>Reservas</th></tr></thead>
-            <tbody>${us.map(u => `<tr>
-              <td data-th="Nombre">${esc(u.nombre)}</td>
-              <td data-th="Correo">${esc(u.email)}</td>
-              <td data-th="Registro">${new Date(u.creado).toLocaleDateString("es-HN")}</td>
+            <tbody>${usuarios.map(u => `<tr>
+              <td data-th="Nombre">${esc(u.nombre || "")}</td>
+              <td data-th="Correo">${esc(u.email || "")}</td>
+              <td data-th="Registro">${esc(u.creado ? new Date(u.creado).toLocaleDateString("es-HN") : "-")}</td>
               <td data-th="Reservas">${Orders.byEmail(u.email).length}</td>
             </tr>`).join("")}</tbody></table></div>`;
         })()}
@@ -1296,40 +1395,44 @@
           <button class="btn btn--primary btn--sm">Bloquear</button>
         </form>
         ${bloqueos.length ? `<ul class="block-list">${bloqueos.map(b => `<li>${esc(b.fecha)} · ${esc(b.hora)} <button class="ci-remove" data-unblock="${esc(b.fecha)}|${esc(b.hora)}">${icon("trash")} Quitar</button></li>`).join("")}</ul>` : ""}
-        <p class="auth-note" style="margin-top:16px">${icon("info")} Panel de demostración: los datos viven en este navegador. El plan de la Fase 2 contempla moverlos a Firebase Firestore.</p>`;
+        <p class="auth-note" style="margin-top:16px">${icon("info")} Los cambios se guardan en Firebase Firestore y los ve todo el equipo. Cancelar una reserva libera esa hora en el calendario.</p>`;
 
-      $("#adminOut").addEventListener("click", () => { sessionStorage.removeItem("gs_admin"); location.reload(); });
-      $$(".estado-sel", root).forEach(sel => sel.addEventListener("change", () => {
-        Orders.setStatus(sel.dataset.order, sel.value);
-        showToast(`Pedido ${sel.dataset.order}: ${sel.value}.`);
+      /* Todo lo que cambia el panel viaja a Firestore. Si algo falla lo digo en
+         lugar de darlo por guardado, y vuelvo a dibujar con lo que quedó. */
+      const aplicar = async (accion, aviso) => {
+        try { await accion(); showToast(aviso); }
+        catch (e) { showToast("No se pudo guardar: " + (e && e.message ? e.message : "revisa tu conexión.")); }
         render();
-      }));
+      };
+
+      $("#adminOut").addEventListener("click", () => { Auth.logout(); location.reload(); });
+      $$(".estado-sel", root).forEach(sel => sel.addEventListener("change", () =>
+        aplicar(() => Orders.setStatus(sel.dataset.order, sel.value),
+                `Pedido ${sel.dataset.order}: ${sel.value}.`)));
       // guardar precio, cupos y visibilidad del inventario
       $$("[data-price]", root).forEach(inp => inp.addEventListener("change", () => {
         const v = Math.max(0, parseInt(inp.value, 10) || 0);
-        Inventory.set(inp.dataset.price, { price: v });
-        showToast("Precio actualizado."); render();
+        aplicar(() => Inventory.set(inp.dataset.price, { price: v }), "Precio actualizado.");
       }));
       $$("[data-stock]", root).forEach(inp => inp.addEventListener("change", () => {
         const v = Math.max(0, Math.min(99, parseInt(inp.value, 10) || 0));
-        Inventory.set(inp.dataset.stock, { stock: v });
-        showToast("Cupos actualizados."); render();
+        aplicar(() => Inventory.set(inp.dataset.stock, { stock: v }), "Cupos actualizados.");
       }));
-      $$("[data-activo]", root).forEach(chk => chk.addEventListener("change", () => {
-        Inventory.set(chk.dataset.activo, { activo: chk.checked });
-        showToast(chk.checked ? "Servicio visible en el catálogo." : "Servicio oculto del catálogo."); render();
-      }));
-      $("#invReset").addEventListener("click", () => { Inventory.reset(); showToast("Inventario restaurado."); render(); });
+      $$("[data-activo]", root).forEach(chk => chk.addEventListener("change", () =>
+        aplicar(() => Inventory.set(chk.dataset.activo, { activo: chk.checked }),
+                chk.checked ? "Servicio visible en el catálogo." : "Servicio oculto del catálogo.")));
+      $("#invReset").addEventListener("click", () =>
+        aplicar(() => Inventory.reset(), "Inventario restaurado."));
 
       $("#blockForm").addEventListener("submit", (e) => {
         e.preventDefault();
         const f = e.target.querySelector('[name="fecha"]').value;
         const h = e.target.querySelector('[name="hora"]').value;
-        if (f) { Blocked.add(f, h); render(); }
+        if (f) aplicar(() => Blocked.add(f, h), `Bloqueado ${f} a las ${h}.`);
       });
       $$("[data-unblock]", root).forEach(b => b.addEventListener("click", () => {
         const [f, h] = b.dataset.unblock.split("|");
-        Blocked.remove(f, h); render();
+        aplicar(() => Blocked.remove(f, h), "Horario liberado.");
       }));
       hydrate(root);
     }
@@ -1337,10 +1440,12 @@
 
   /* miro qué página es y llamo a la función que le toca */
   async function arrancar() {
-    // si hay nube, intento traer los datos antes de dibujar; si falla, sigo con lo local
-    if (window.GS_CLOUD && window.GS_CLOUD.activo) {
-      try { await window.GS_CLOUD.bajar(); } catch (e) { /* seguimos con los datos del navegador */ }
-    }
+    /* Primero recupero la sesión que hubiera quedado abierta y después bajo lo
+       que esa sesión tenga permiso de ver. Si la nube no responde, la página se
+       dibuja igual con la copia del navegador: lo único que exige conexión de
+       verdad es confirmar una reserva. */
+    if (window.GS_AUTH) { try { await window.GS_AUTH.iniciar(); } catch (e) {} }
+    try { await Nube.sincronizar(); } catch (e) {}
     initLayout();
     const page = document.body.dataset.page;
     ({ home: initHome, catalog: initCatalog, product: initProduct, cart: initCart,
@@ -1349,5 +1454,5 @@
   }
   document.addEventListener("DOMContentLoaded", arrancar);
 
-  window.GS = { Cart, money, showToast, Auth, Orders, Blocked, busySlots, Inventory, availability };
+  window.GS = { Cart, money, showToast, Auth, Orders, Blocked, Ocupados, busySlots, Inventory, availability };
 })();

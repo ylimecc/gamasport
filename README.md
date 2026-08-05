@@ -37,8 +37,10 @@ Tienda y reservas en línea para **GamaSport**, centro de canchas de fútbol 5 e
 |---|---|
 | `js/products.js` | Catálogo, categorías, promociones y datos del negocio |
 | `js/app.js` | Carrito, cuentas, pedidos, inventario y lógica de cada página |
-| `js/cloud.js` | Sincronización con Firestore por API REST |
-| `js/firebase-config.js` | Credenciales públicas del proyecto de Firebase |
+| `js/auth.js` | Cuentas contra Firebase Authentication (registro, sesión e invitados) |
+| `js/cloud.js` | Lectura y escritura en Firestore, con la credencial de cada sesión |
+| `js/firebase-config.js` | Identificadores públicos del proyecto de Firebase |
+| `firestore.rules` | Quién puede leer y escribir cada colección |
 | `js/assets.js` | Íconos e imágenes en SVG, sin peticiones externas |
 | `js/effects.js` | Animaciones al hacer scroll |
 | `css/styles.css` · `css/animations.css` | Estilos y animaciones |
@@ -47,14 +49,39 @@ Tienda y reservas en línea para **GamaSport**, centro de canchas de fútbol 5 e
 
 HTML + CSS + JavaScript puro, sin frameworks ni build. Hospedado en GitHub Pages con HTTPS.
 
-Los datos (reservas, usuarios, cupos y horarios bloqueados) se guardan en **Firebase Firestore** y se
-consultan por su API REST. El navegador conserva una copia local, así que si la nube no responde el
-sitio sigue funcionando y todo se fusiona cuando vuelve la conexión.
+Las cuentas las maneja **Firebase Authentication**: la contraseña viaja cifrada y el sitio nunca la
+guarda. Quien reserva sin registrarse entra como invitado, y si después crea su cuenta desde el mismo
+navegador conserva las reservas que ya había hecho.
+
+Las reservas, los perfiles, los precios y los horarios bloqueados viven en **Firebase Firestore**.
+Cada petición va firmada con la sesión de quien la hace, y `firestore.rules` decide qué alcanza: un
+cliente solo ve sus propias reservas y el personal las ve todas. Lo único público es qué horas están
+tomadas, que no lleva datos de ninguna persona.
+
+Cada hora se aparta como un documento con identificador `fecha_hora_cancha`, así que dos personas que
+confirmen al mismo tiempo no pueden llevarse la misma cancha: la segunda recibe la otra cancha libre
+o el aviso de que la hora se acaba de ocupar. Por eso confirmar una reserva necesita conexión; el
+resto del sitio (catálogo, carrito, precios) se sigue navegando con la copia local.
 
 El pago con tarjeta y PayPal está en **modo de prueba (sandbox)**: no se procesan cobros reales.
 
 **Cupones:** `GAMA10` (10 %) · `EQUIPO15` (15 %) · `SEMANA15` (15 %)
 **Tarjeta de prueba:** 4242 4242 4242 4242, cualquier fecha futura y cualquier CVV
+
+## Puesta en marcha en Firebase
+
+El sitio es estático y no necesita instalación, pero el proyecto de Firebase sí necesita tres cosas
+configuradas una sola vez:
+
+1. **Authentication › Sign-in method**: habilitar *Correo electrónico/contraseña* y *Anónimo*
+   (el segundo es el que permite reservar sin crear cuenta).
+2. **Firestore › Reglas**: pegar el contenido de `firestore.rules` y publicar.
+3. **Personal**: registrarse en el sitio con el correo del negocio, copiar el UID que aparece en
+   *Authentication › Users* y crear con él un documento en la colección `admins`
+   (el identificador del documento es el UID; el contenido da igual). Ese documento es el único
+   que convierte una cuenta en administradora, y no se puede crear desde el sitio.
+
+Sin el paso 3 nadie entra al panel, aunque sepa la contraseña de una cuenta.
 
 ---
 
