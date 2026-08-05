@@ -8,6 +8,9 @@ Tienda y reservas en línea para **GamaSport**, centro de canchas de fútbol 5 e
 Cómo se construyó la plataforma, herramientas, arquitectura, seguridad, normativa de comercio
 electrónico aplicada y guion para la exposición.
 
+**📊 Presentación para la defensa: [GamaSport-Presentacion.pptx](docs/GamaSport-Presentacion.pptx)**
+16 diapositivas con notas del orador en cada una, listas para repartir entre el equipo.
+
 **🧪 Pruebas automáticas: [`node pruebas/pruebas.mjs`](pruebas/)**
 21 comprobaciones en un navegador real, sin tocar la base de datos. Correrlas antes de subir cambios.
 
