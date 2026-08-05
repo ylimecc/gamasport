@@ -11,6 +11,10 @@ electrónico aplicada y guion para la exposición.
 **📊 Presentación para la defensa: [GamaSport-Presentacion.pptx](docs/GamaSport-Presentacion.pptx)**
 16 diapositivas con notas del orador en cada una, listas para repartir entre el equipo.
 
+**🎤 Un cuadernillo por expositor: [docs/exposicion/](docs/exposicion/)**
+La documentación repartida en cinco partes, cada una con su tramo del guion y las preguntas que le
+pueden hacer a esa persona.
+
 **🧪 Pruebas automáticas: [`node pruebas/pruebas.mjs`](pruebas/)**
 21 comprobaciones en un navegador real, sin tocar la base de datos. Correrlas antes de subir cambios.
 

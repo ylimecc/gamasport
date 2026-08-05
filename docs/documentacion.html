@@ -129,7 +129,6 @@
   <p class="sub">
     Documentación completa del sitio de reservas y tienda en línea de GamaSport:
     herramientas, arquitectura, funcionamiento, seguridad y cumplimiento legal.
-    Pensada para explicar el proyecto en la exposición.
   </p>
 
   <div class="pie">
@@ -157,8 +156,7 @@
   <a><span class="n">14</span>Posicionamiento y presencia en redes</a>
   <a><span class="n">15</span>Pruebas realizadas</a>
   <a><span class="n">16</span>Qué quedó fuera y por qué</a>
-  <a><span class="n">17</span>Guion sugerido para el video</a>
-  <a><span class="n">18</span>Glosario</a>
+  <a><span class="n">17</span>Glosario</a>
 </div>
 
 <!-- ===================== 1 ===================== -->
@@ -246,7 +244,7 @@
 </table>
 
 <div class="caja">
-  <h4>Un dato para la exposición</h4>
+  <h4>Cero dependencias externas</h4>
   <p>
     El sitio no carga <strong>ni una sola librería externa</strong>: ni jQuery, ni Bootstrap, ni fuentes
     de Google, ni íconos de terceros. Todo lo que el navegador descarga sale del propio sitio. Eso
@@ -384,7 +382,8 @@
 
 <!-- ===================== 7 ===================== -->
 <h2 class="nueva-pagina">7. El flujo de reserva, paso a paso</h2>
-<p>Este es el corazón del sitio y conviene explicarlo despacio en el video.</p>
+<p>Este es el proceso central del sitio: lo que ocurre desde que el cliente elige un servicio hasta que
+tiene su comprobante en la mano.</p>
 
 <div class="flujo">
   <div class="paso"><div class="num">1</div><div class="txt">
@@ -499,7 +498,7 @@
 </table>
 
 <div class="caja ojo">
-  <h4>Una lección que vale contar en el video</h4>
+  <h4>Hallazgo de la auditoría y corrección aplicada</h4>
   <p>
     En una revisión de seguridad se encontró que la base de datos estaba abierta: cualquiera con la
     dirección del sitio podía leer los nombres, correos y teléfonos de los clientes, y también borrar
@@ -509,8 +508,9 @@
   <p>
     Ambas cosas se corrigieron: hoy las reglas cierran el acceso, cada quien ve solo lo suyo, y el
     permiso de administrador ya no depende de una contraseña escrita en el código sino de una
-    autorización que solo se otorga desde la consola de Firebase. Es un buen ejemplo de que la
-    seguridad de un sitio no está en el diseño ni en el código bonito, sino en quién puede hacer qué.
+    autorización que solo se otorga desde la consola de Firebase. El caso ilustra un principio del
+    desarrollo web: la seguridad de un sitio no depende de su diseño ni de su código, sino de las
+    reglas que definen quién puede hacer qué.
   </p>
 </div>
 
@@ -537,9 +537,8 @@
 <!-- ===================== 11 ===================== -->
 <h2>11. El asistente de preguntas frecuentes</h2>
 <p>
-  Es el botón redondo que aparece abajo a la derecha. <strong>No es inteligencia artificial</strong>, y
-  conviene aclararlo en el video porque suele preguntarse: es una lista de catorce preguntas con sus
-  respuestas escritas a mano.
+  Es el botón redondo que aparece abajo a la derecha. <strong>No es inteligencia artificial</strong>:
+  es una lista de catorce preguntas con sus respuestas escritas a mano.
 </p>
 <p>
   Cuando alguien escribe, el texto se compara con las palabras clave de cada pregunta. Las palabras
@@ -673,8 +672,8 @@
 <!-- ===================== 16 ===================== -->
 <h2>16. Qué quedó fuera y por qué</h2>
 <p>
-  Decir con claridad los límites del proyecto suma en una exposición, porque demuestra que se
-  entiende la diferencia entre un prototipo académico y un sistema en producción.
+  Un prototipo académico y un sistema en producción no son lo mismo. Estos son los puntos donde se
+  separan, y qué haría falta para cerrarlos.
 </p>
 <table>
   <tr><th style="width:34%">Pendiente</th><th>Por qué</th></tr>
@@ -686,42 +685,7 @@
 </table>
 
 <!-- ===================== 17 ===================== -->
-<h2 class="nueva-pagina">17. Guion sugerido para el video</h2>
-<p>
-  Propuesta de reparto para una exposición de entre ocho y diez minutos. Cada bloque indica qué
-  mostrar en pantalla mientras se habla.
-</p>
-<table>
-  <tr><th style="width:12%">Minuto</th><th style="width:26%">Bloque</th><th>Qué decir y qué mostrar</th></tr>
-  <tr><td>0:00 a 1:00</td><td>El negocio y el problema</td><td>Mostrar el inicio. Explicar qué es GamaSport y los tres problemas de reservar por teléfono.</td></tr>
-  <tr><td>1:00 a 2:00</td><td>Herramientas</td><td>Explicar por qué se eligió web pura sin frameworks y qué aporta Firebase. Recalcar que no carga ninguna librería externa.</td></tr>
-  <tr><td>2:00 a 4:00</td><td>Recorrido de compra</td><td>Hacer una reserva en vivo: catálogo, ficha, carrito, cupón, desglose del ISV, fecha y hora, confirmación.</td></tr>
-  <tr><td>4:00 a 5:00</td><td>La hora única</td><td>Explicar con el esquema del apartado 8 por qué dos personas no pueden llevarse la misma cancha.</td></tr>
-  <tr><td>5:00 a 6:30</td><td>Seguridad</td><td>Contar el hallazgo de la base de datos abierta y cómo se corrigió. Mostrar que un cliente solo ve sus reservas.</td></tr>
-  <tr><td>6:30 a 7:30</td><td>Panel del personal</td><td>Entrar al panel, cambiar el estado de una reserva y bloquear un horario.</td></tr>
-  <tr><td>7:30 a 8:30</td><td>Marco legal</td><td>Explicar el ISV, la información obligatoria del comercio, la política de cancelación y el manejo de datos.</td></tr>
-  <tr><td>8:30 a 9:30</td><td>Límites y cierre</td><td>Decir con claridad qué quedó fuera y qué haría falta para operar de verdad.</td></tr>
-</table>
-
-<div class="caja">
-  <h4>Tres frases que conviene tener listas</h4>
-  <p>
-    <strong>Sobre la clave visible:</strong> "La clave del proyecto se ve en el código a propósito;
-    así funciona toda aplicación web. La seguridad real está en las reglas del servidor, que dicen
-    quién puede leer y escribir cada cosa."
-  </p>
-  <p>
-    <strong>Sobre el asistente:</strong> "No es inteligencia artificial: son catorce preguntas con sus
-    respuestas y un sistema de coincidencia por palabras clave."
-  </p>
-  <p>
-    <strong>Sobre el pago:</strong> "La pasarela está en modo de prueba. No se cobra dinero real, y eso
-    está indicado en pantalla para no confundir a nadie."
-  </p>
-</div>
-
-<!-- ===================== 18 ===================== -->
-<h2>18. Glosario</h2>
+<h2 class="nueva-pagina">17. Glosario</h2>
 <table>
   <tr><th style="width:26%">Término</th><th>Qué significa</th></tr>
   <tr><td>Sitio estático</td><td>Un sitio cuyos archivos se entregan tal cual, sin que un programa los arme en el servidor cada vez.</td></tr>
