@@ -495,8 +495,7 @@ p { color: var(--text-soft); }
   .catalog-layout { grid-template-columns: 1fr; }
   .filters { display: none; }
   .filters.show { display: block; }
-}
-@media (max-width: 980px) {
+  /* el menú tiene 8 enlaces: aquí ya no cabe en una línea y pasa a hamburguesa */
   .nav-toggle { display: flex; }
   .primary-nav {
     position: fixed; inset: 72px 0 auto 0; background: var(--ink); flex-direction: column;

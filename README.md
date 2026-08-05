@@ -26,7 +26,7 @@ Tienda y reservas en línea para **GamaSport**, centro de canchas de fútbol 5 e
 | `promociones.html` | Promociones vigentes y cupones |
 | `cuenta.html` | Iniciar sesión, registrarse y ver el historial de reservas |
 | `admin.html` | Panel administrativo (pedidos, inventario, precios y horarios) |
-| `nosotros.html` | Historia del centro, instalaciones y equipo |
+| `nosotros.html` | Quiénes somos, instalaciones y valores del centro |
 | `contacto.html` | Formulario de contacto y ubicación |
 | `privacidad.html` / `terminos.html` | Legales |
 | `404.html` | Página de error |
