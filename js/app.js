@@ -225,12 +225,15 @@
     const cartLink = nav.querySelector(".nav-cart");
     const promos = document.createElement("a");
     promos.href = "promociones.html"; promos.dataset.nav = "promos"; promos.textContent = "Promociones";
+    const about = document.createElement("a");
+    about.href = "nosotros.html"; about.dataset.nav = "about"; about.textContent = "Nosotros";
     const account = document.createElement("a");
     const user = Auth.current();
     account.href = "cuenta.html"; account.dataset.nav = "account";
     account.textContent = user ? ("Hola, " + user.nombre.split(" ")[0]) : "Mi cuenta";
     const contact = nav.querySelector('[data-nav="contact"]');
     nav.insertBefore(promos, contact || cartLink);
+    nav.insertBefore(about, contact || cartLink);
     nav.insertBefore(account, cartLink);
   }
 
