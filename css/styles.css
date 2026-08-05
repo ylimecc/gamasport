@@ -483,10 +483,6 @@ p { color: var(--text-soft); }
 .footer-estado.abierto { color: #cfe8d3; }
 .footer-estado b { color: #fff; font-weight: 700; }
 
-.footer-social { display: flex; gap: 10px; margin-top: 18px; }
-.footer-social a { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,.06); display: grid; place-items: center; transition: .15s; }
-.footer-social a:hover { background: var(--green); }
-.footer-social svg { width: 19px; height: 19px; color: #cfe0d8; }
 /* los títulos de columna, con el subrayado corto de la marca */
 .site-footer h4 {
   position: relative; color: #fff; font-size: .82rem; font-weight: 800;

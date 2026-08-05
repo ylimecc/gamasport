@@ -17,10 +17,7 @@
     hours: "Lunes a Domingo, 3:00 PM a 9:00 PM",
     canchas: 2,             // cuantas canchas se pueden alquilar a la misma hora
     currency: "L",          // moneda: Lempira (L)
-    isvRate: 0.15,          // impuesto sobre ventas de Honduras (15%)
-    instagram: "https://instagram.com/",
-    facebook: "https://facebook.com/",
-    tiktok: "https://tiktok.com/"
+    isvRate: 0.15           // impuesto sobre ventas de Honduras (15%)
   };
 
   /* las 4 categorías en las que dividí el catálogo */

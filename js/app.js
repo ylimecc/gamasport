@@ -265,9 +265,6 @@
     $$("[data-mail-link]", scope).forEach(a => a.href = "mailto:" + CONFIG.email);
     $$("[data-maps]", scope).forEach(a => a.href = CONFIG.mapsUrl);
     $$("[data-cfg]", scope).forEach(el => { const v = CONFIG[el.dataset.cfg]; if (v != null) el.textContent = v; });
-    $$("[data-social=instagram]", scope).forEach(a => a.href = CONFIG.instagram);
-    $$("[data-social=facebook]", scope).forEach(a => a.href = CONFIG.facebook);
-    $$("[data-social=tiktok]", scope).forEach(a => a.href = CONFIG.tiktok);
     $$("[data-icon]", scope).forEach(el => { if (!el.children.length) el.innerHTML = icon(el.dataset.icon); });
     $$("[data-year]", scope).forEach(el => el.textContent = new Date().getFullYear());
   }
