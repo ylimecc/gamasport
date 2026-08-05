@@ -440,12 +440,33 @@ p { color: var(--text-soft); }
 .page-hero .breadcrumb a, .page-hero .breadcrumb { color: #93aaa0; }
 
 /* el footer */
-.site-footer { position: relative; background: var(--ink); color: #a8bcb3; padding: 64px 0 30px; }
-/* la línea que remata la página: del verde de la grama al lima del logo */
-.site-footer::before {
-  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--green-dark), var(--green) 45%, var(--lime));
+/* El pie es el fondo de la cancha: arranca con una franja de grama con las
+   líneas del campo y se apaga hacia el azul de la marca. */
+.site-footer {
+  position: relative; overflow: hidden;
+  background: var(--ink); color: #a8bcb3;
+  padding: 150px 0 30px;
+  border-top: 3px solid var(--lime);
 }
+/* la grama con las líneas del área y el círculo central */
+.site-footer::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 200px;
+  background:
+    url("../img/cancha-lineas.svg") 50% -34px / 1120px auto no-repeat,
+    linear-gradient(180deg, #17924a 0%, #0e6b36 42%, rgba(10,28,36,0) 100%);
+  opacity: .5;
+  -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 92%);
+  mask-image: linear-gradient(180deg, #000 30%, transparent 92%);
+  pointer-events: none;
+}
+/* y una textura de balones apenas perceptible en todo el fondo */
+.site-footer::after {
+  content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+  background: url("../img/patron-balones.svg") 0 0 / 240px 240px repeat;
+  opacity: .022;
+  pointer-events: none;
+}
+.footer-grid, .footer-bottom { position: relative; z-index: 1; }
 .footer-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1.2fr; gap: 36px; }
 .footer-brand .brand { margin-bottom: 16px; }
 .footer-brand p { color: #9cb3a9; font-size: .95rem; max-width: 320px; }
@@ -490,6 +511,9 @@ p { color: var(--text-soft); }
 .footer-bottom a { color: #a8bcb3; }
 @media (max-width: 540px) {
   .footer-bottom { padding-right: 0; padding-bottom: 52px; }
+  /* en el celular la franja de grama va más baja, para no comerse la pantalla */
+  .site-footer { padding-top: 104px; }
+  .site-footer::before { height: 140px; background-size: 620px auto, auto; background-position: 50% -18px, 0 0; }
 }
 
 /* el botón flotante de WhatsApp */
